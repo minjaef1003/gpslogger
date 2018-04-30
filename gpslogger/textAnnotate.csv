@@ -1,0 +1,2 @@
+time,lat,lon,elevation,accuracy,bearing,speed,satellites,provider,hdop,vdop,pdop,geoidheight,ageofdgpsdata,dgpsid,activity,battery,annotation
+1970-01-01T00:00:00.000Z,12.222000,14.151000,,,,,0,MOCK,,,,,,,,47,"testAnnotate"
