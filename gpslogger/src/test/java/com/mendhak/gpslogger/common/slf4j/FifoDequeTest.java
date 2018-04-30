@@ -56,9 +56,8 @@ public class FifoDequeTest {
     @Test
     public void testRemoveFirst() {
         deque = new FifoDeque(5);
-        for(int i=0; i<5; i++)
+        for(int i=0; i<6; i++)
             deque.add(i);
-        deque.removeFirst();
         assertThat("test if add to all filled deque, remove First",
                 deque.getFirst(),is(1));
     }
