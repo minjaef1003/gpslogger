@@ -55,4 +55,13 @@ public class OpenStreetMapManagerTest {
 
     }
 
+    @Test
+    public void getOSMAuthProvider_Test(){
+        PreferenceHelper pm = mock(PreferenceHelper.class);
+        OpenStreetMapManager osm = new OpenStreetMapManager(pm);
+
+        assertThat(osm.getOSMAuthProvider().getRequestTokenEndpointUrl(), is("http://www.openstreetmap.org/oauth/request_token"));
+        assertThat(osm.getOSMAuthProvider().getAccessTokenEndpointUrl(), is("http://www.openstreetmap.org/oauth/access_token"));
+        assertThat(osm.getOSMAuthProvider().getAuthorizationWebsiteUrl(), is("http://www.openstreetmap.org/oauth/authorize"));
+    }
 }

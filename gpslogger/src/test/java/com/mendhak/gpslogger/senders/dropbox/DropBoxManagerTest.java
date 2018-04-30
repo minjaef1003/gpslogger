@@ -78,4 +78,11 @@ public class DropBoxManagerTest {
 
     }
 
+    @Test
+    public void finishAuthorization_WhenNoNewIntent_ReturnFalse(){
+        PreferenceHelper pm = mock(PreferenceHelper.class);
+        DropBoxManager dropBoxManager = new DropBoxManager(pm);
+
+        assertThat(dropBoxManager.finishAuthorization(), is(false));
+    }
 }

@@ -6,6 +6,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.io.File;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
@@ -40,5 +42,14 @@ public class OwnCloudManagerTest {
 
         when(pm.isOwnCloudAutoSendEnabled()).thenReturn(true);
         assertThat("Valid and checked - available", ocm.isAutoSendAvailable(), is(true));
+    }
+
+    @Test
+    public void accept_Test(){
+        PreferenceHelper pm = mock(PreferenceHelper.class);
+        OwnCloudManager ocm = new OwnCloudManager(pm);
+
+        assertThat("it must return true although parameter has wrong value", ocm.accept(new File("xyz"), "abc"), is(true));
+        assertThat("it must return true although parameter has wrong value", ocm.accept(null, null), is(true));
     }
 }

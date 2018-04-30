@@ -100,4 +100,16 @@ public class GeoJSONLoggerTest {
 
 
     }
+
+    @Test
+    /**
+     * Purpose : check getName() function
+     * Input : Null
+     * Expected : return "GeoJSON"
+     **/
+    public void getName_ReturnName(){
+        GeoJSONLogger geoJSONLogger = new GeoJSONLogger(null, false);
+        String name = geoJSONLogger.getName();
+        assertEquals("GeoJSON", name);
+    }
 }

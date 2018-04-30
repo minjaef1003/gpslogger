@@ -6,6 +6,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.io.File;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
@@ -80,5 +82,25 @@ public class SFTPManagerTest {
 
         when(pm.getSFTPPort()).thenReturn(2999);
         assertThat("Port is valid", manager.isAvailable(), is(true));
+    }
+
+    @Test
+    public void hasUserAllowedAutoSending_Test(){
+        PreferenceHelper pm = mock(PreferenceHelper.class);
+        SFTPManager manager = new SFTPManager(pm);
+
+        assertThat("initial value for Auto Sending is false", manager.hasUserAllowedAutoSending(), is(false));
+
+        when(pm.isSFTPEnabled()).thenReturn(true);
+        assertThat(manager.hasUserAllowedAutoSending(), is(true));
+    }
+
+    @Test
+    public void accept_Test(){
+        PreferenceHelper pm = mock(PreferenceHelper.class);
+        SFTPManager manager = new SFTPManager(pm);
+
+        assertThat("this method always return true", manager.accept(new File("abc"), "xyz"), is(true));
+        assertThat("this method always return true", manager.accept(null, null), is(true));
     }
 }
