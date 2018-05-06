@@ -44,7 +44,7 @@ import java.util.List;
 public class DropBoxManager extends FileSender {
 
     private static final Logger LOG = Logs.of(DropBoxManager.class);
-    private final PreferenceHelper preferenceHelper;
+    private final PreferenceHelper preferenceHelper; // Self Encapsulate Field
 
     public DropBoxManager(PreferenceHelper preferenceHelper) {
         this.preferenceHelper = preferenceHelper;
@@ -119,8 +119,7 @@ public class DropBoxManager extends FileSender {
     public void uploadFile(final String fileName) {
 
         if(!Strings.isNullOrEmpty(getPreferenceHelper().getDropBoxOauth1Secret())){
-            convertOauth1ToOauth2Token(fileName);
-            return;
+            convertOauth1ToOauth2Token(); // remove parameter
         }
 
         final JobManager jobManager = AppSettings.getJobManager();
@@ -137,7 +136,7 @@ public class DropBoxManager extends FileSender {
      * Attempts to upgrade Oauth1 tokens to Oauth2 before performing a file upload
      * @param pendingFileName
      */
-    void convertOauth1ToOauth2Token(final String pendingFileName) {
+    void convertOauth1ToOauth2Token() {
         AsyncTask<Void, Void, String> task = new AsyncTask<Void, Void, String>() {
 
             DbxOAuth1Upgrader upgrader;
@@ -148,9 +147,7 @@ public class DropBoxManager extends FileSender {
 
                 getLOG().warn("Found old Dropbox Oauth1 tokens! Attempting upgrade now.");
                 try {
-                    DbxRequestConfig requestConfig = DbxRequestConfig.newBuilder("GPSLogger").build();
-                    DbxAppInfo appInfo = new DbxAppInfo(BuildConfig.DROPBOX_APP_KEY, BuildConfig.DROPBOX_APP_SECRET);
-                    upgrader = new DbxOAuth1Upgrader(requestConfig, appInfo);
+                    upgrader = getUpgrader(); // Introduce Foreign Method
                     oAuth1AccessToken = new DbxOAuth1AccessToken(getPreferenceHelper().getDropBoxAccessKeyName(), getPreferenceHelper().getDropBoxOauth1Secret());
                     getLOG().debug("Requesting Oauth2 token...");
                     String newToken = upgrader.createOAuth2AccessToken(oAuth1AccessToken);
@@ -172,7 +169,6 @@ public class DropBoxManager extends FileSender {
                 if (authToken != null) {
                     unLink();
                     storeKeys(authToken);
-                    uploadFile(pendingFileName);
                 }
 
             }
@@ -180,7 +176,13 @@ public class DropBoxManager extends FileSender {
         task.execute();
     }
 
+    private DbxOAuth1Upgrader getUpgrader()
+    {
+        DbxRequestConfig requestConfig = DbxRequestConfig.newBuilder("GPSLogger").build();
+        DbxAppInfo appInfo = new DbxAppInfo(BuildConfig.DROPBOX_APP_KEY, BuildConfig.DROPBOX_APP_SECRET);
 
+        return new DbxOAuth1Upgrader(requestConfig, appInfo);
+    }
 
     @Override
     public boolean accept(File dir, String name) {
