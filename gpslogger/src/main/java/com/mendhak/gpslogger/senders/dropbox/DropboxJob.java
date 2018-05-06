@@ -43,8 +43,7 @@ public class DropboxJob extends Job {
 
     private static final Logger LOG = Logs.of(DropboxJob.class);
     private static PreferenceHelper preferenceHelper = PreferenceHelper.getInstance();
-    String fileName;
-
+    private String fileName;
 
     protected DropboxJob(String fileName) {
         super(new Params(1).requireNetwork().persist().addTags(getJobTag(fileName)));
@@ -77,8 +76,7 @@ public class DropboxJob extends Job {
         try {
             getLOG().debug("Beginning upload to dropbox...");
             InputStream inputStream = new FileInputStream(gpxFile);
-            DbxRequestConfig requestConfig = DbxRequestConfig.newBuilder("GPSLogger").build();
-            DbxClientV2 mDbxClient = new DbxClientV2(requestConfig, PreferenceHelper.getInstance().getDropBoxAccessKeyName());
+            DbxClientV2 mDbxClient = getDbxClientV2();
             mDbxClient.files().uploadBuilder("/" + getFileName()).withMode(WriteMode.OVERWRITE).uploadAndFinish(inputStream);
             EventBus.getDefault().post(new UploadEvents.Dropbox().succeeded());
         } catch (Exception e) {
@@ -88,6 +86,12 @@ public class DropboxJob extends Job {
 
     }
 
+    private DbxClientV2 getDbxClientV2()
+    {
+        DbxRequestConfig requestConfig = DbxRequestConfig.newBuilder("GPSLogger").build();
+
+        return new DbxClientV2(requestConfig, PreferenceHelper.getInstance().getDropBoxAccessKeyName());
+    }
 
     @Override
     protected void onCancel() {
