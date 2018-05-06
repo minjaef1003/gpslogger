@@ -39,7 +39,6 @@ import org.slf4j.Logger;
 
 import java.io.File;
 import java.util.List;
-import java.util.Locale;
 
 
 public class DropBoxManager extends FileSender {
@@ -51,13 +50,17 @@ public class DropBoxManager extends FileSender {
         this.preferenceHelper = preferenceHelper;
     }
 
+    private static Logger getLOG() {
+        return LOG;
+    }
+
     /**
      * Whether the user has authorized GPSLogger with DropBox
      *
      * @return True/False
      */
     public boolean isLinked() {
-        return !Strings.isNullOrEmpty(preferenceHelper.getDropBoxAccessKeyName());
+        return !Strings.isNullOrEmpty(getPreferenceHelper().getDropBoxAccessKeyName());
     }
 
     public boolean finishAuthorization() {
@@ -81,7 +84,7 @@ public class DropBoxManager extends FileSender {
      * @param key    The Access Key
      */
     private void storeKeys(String key) {
-        preferenceHelper.setDropBoxAccessKeyName(key);
+        getPreferenceHelper().setDropBoxAccessKeyName(key);
     }
 
     public void startAuthentication(Context context) {
@@ -90,32 +93,32 @@ public class DropBoxManager extends FileSender {
     }
 
     public void unLink() {
-        preferenceHelper.setDropBoxAccessKeyName(null);
-        preferenceHelper.setDropBoxOauth1Secret(null);
+        getPreferenceHelper().setDropBoxAccessKeyName(null);
+        getPreferenceHelper().setDropBoxOauth1Secret(null);
     }
 
     @Override
     public void uploadFile(List<File> files) {
         for (File f : files) {
-            LOG.debug(f.getName());
+            getLOG().debug(f.getName());
             uploadFile(f.getName());
         }
     }
 
     @Override
     public boolean isAvailable() {
-        return isLinked() && preferenceHelper.getDropBoxAccessKeyName() != null;
+        return isLinked() && getPreferenceHelper().getDropBoxAccessKeyName() != null;
     }
 
 
     @Override
     public boolean hasUserAllowedAutoSending() {
-        return  preferenceHelper.isDropboxAutoSendEnabled();
+        return  getPreferenceHelper().isDropboxAutoSendEnabled();
     }
 
     public void uploadFile(final String fileName) {
 
-        if(!Strings.isNullOrEmpty(preferenceHelper.getDropBoxOauth1Secret())){
+        if(!Strings.isNullOrEmpty(getPreferenceHelper().getDropBoxOauth1Secret())){
             convertOauth1ToOauth2Token(fileName);
             return;
         }
@@ -143,22 +146,22 @@ public class DropBoxManager extends FileSender {
             @Override
             protected String doInBackground(Void... params) {
 
-                LOG.warn("Found old Dropbox Oauth1 tokens! Attempting upgrade now.");
+                getLOG().warn("Found old Dropbox Oauth1 tokens! Attempting upgrade now.");
                 try {
                     DbxRequestConfig requestConfig = DbxRequestConfig.newBuilder("GPSLogger").build();
                     DbxAppInfo appInfo = new DbxAppInfo(BuildConfig.DROPBOX_APP_KEY, BuildConfig.DROPBOX_APP_SECRET);
                     upgrader = new DbxOAuth1Upgrader(requestConfig, appInfo);
-                    oAuth1AccessToken = new DbxOAuth1AccessToken(preferenceHelper.getDropBoxAccessKeyName(), preferenceHelper.getDropBoxOauth1Secret());
-                    LOG.debug("Requesting Oauth2 token...");
+                    oAuth1AccessToken = new DbxOAuth1AccessToken(getPreferenceHelper().getDropBoxAccessKeyName(), getPreferenceHelper().getDropBoxOauth1Secret());
+                    getLOG().debug("Requesting Oauth2 token...");
                     String newToken = upgrader.createOAuth2AccessToken(oAuth1AccessToken);
-                    LOG.debug("New token is " + newToken);
-                    LOG.debug("Disabling the old Oauth1 token ");
+                    getLOG().debug("New token is " + newToken);
+                    getLOG().debug("Disabling the old Oauth1 token ");
                     upgrader.disableOAuth1AccessToken(oAuth1AccessToken);
                     return newToken;
 
                 } catch (Exception e) {
                     EventBus.getDefault().post(new UploadEvents.Dropbox().failed("DropBox Oauth2 Token upgrade failed. Please reauthorize DropBox from the settings.", e));
-                    LOG.error("Could not upgrade to Oauth2", e);
+                    getLOG().error("Could not upgrade to Oauth2", e);
                 }
 
                 return null;
@@ -184,6 +187,9 @@ public class DropBoxManager extends FileSender {
         return true;
     }
 
+    private PreferenceHelper getPreferenceHelper() {
+        return preferenceHelper;
+    }
 }
 
 
