@@ -46,11 +46,6 @@ public class DropboxJob extends Job {
     private String fileName;
 
 
-    protected DropboxJob(String fileName) {
-        super(new Params(1).requireNetwork().persist().addTags(getJobTag(fileName)));
-
-        this.setFileName(fileName);
-    }
 
     private static Logger getLOG() {
         return LOG;
