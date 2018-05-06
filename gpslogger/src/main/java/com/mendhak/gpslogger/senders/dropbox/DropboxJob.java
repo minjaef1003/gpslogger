@@ -43,7 +43,7 @@ public class DropboxJob extends Job {
 
     private static final Logger LOG = Logs.of(DropboxJob.class);
     private static PreferenceHelper preferenceHelper = PreferenceHelper.getInstance();
-    private String fileName;
+    String fileName;
 
 
     protected DropboxJob(String fileName) {
