@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Locale;
 
 
 public class DropboxJob extends Job {
@@ -49,40 +50,28 @@ public class DropboxJob extends Job {
     protected DropboxJob(String fileName) {
         super(new Params(1).requireNetwork().persist().addTags(getJobTag(fileName)));
 
-        this.setFileName(fileName);
-    }
-
-    private static Logger getLOG() {
-        return LOG;
-    }
-
-    private static PreferenceHelper getPreferenceHelper() {
-        return preferenceHelper;
-    }
-
-    private static void setPreferenceHelper(PreferenceHelper preferenceHelper) {
-        DropboxJob.preferenceHelper = preferenceHelper;
+        this.fileName = fileName;
     }
 
     @Override
     public void onAdded() {
-        getLOG().debug("Dropbox job added");
+        LOG.debug("Dropbox job added");
     }
 
     @Override
     public void onRun() throws Throwable {
-        File gpsDir = new File(getPreferenceHelper().getGpsLoggerFolder());
-        File gpxFile = new File(gpsDir, getFileName());
+        File gpsDir = new File(preferenceHelper.getGpsLoggerFolder());
+        File gpxFile = new File(gpsDir, fileName);
 
         try {
-            getLOG().debug("Beginning upload to dropbox...");
+            LOG.debug("Beginning upload to dropbox...");
             InputStream inputStream = new FileInputStream(gpxFile);
             DbxRequestConfig requestConfig = DbxRequestConfig.newBuilder("GPSLogger").build();
             DbxClientV2 mDbxClient = new DbxClientV2(requestConfig, PreferenceHelper.getInstance().getDropBoxAccessKeyName());
-            mDbxClient.files().uploadBuilder("/" + getFileName()).withMode(WriteMode.OVERWRITE).uploadAndFinish(inputStream);
+            mDbxClient.files().uploadBuilder("/" + fileName).withMode(WriteMode.OVERWRITE).uploadAndFinish(inputStream);
             EventBus.getDefault().post(new UploadEvents.Dropbox().succeeded());
         } catch (Exception e) {
-            getLOG().error("Could not upload to Dropbox" , e);
+            LOG.error("Could not upload to Dropbox" , e);
             EventBus.getDefault().post(new UploadEvents.Dropbox().failed(e.getMessage(), e));
         }
 
@@ -96,19 +85,11 @@ public class DropboxJob extends Job {
     @Override
     protected boolean shouldReRunOnThrowable(Throwable throwable) {
         EventBus.getDefault().post(new UploadEvents.Dropbox().failed("Could not upload to Dropbox", throwable));
-        getLOG().error("Could not upload to Dropbox", throwable);
+        LOG.error("Could not upload to Dropbox", throwable);
         return false;
     }
 
     public static String getJobTag(String fileName) {
         return "DROPBOX" + fileName;
-    }
-
-    private String getFileName() {
-        return fileName;
-    }
-
-    private void setFileName(String fileName) {
-        this.fileName = fileName;
     }
 }
