@@ -52,25 +52,16 @@ public class OwnCloudJob extends Job implements OnRemoteOperationListener {
 
     private static final Logger LOG = Logs.of(OwnCloudJob.class);
 
-
-    String servername;
-    String username;
-    String password;
-    String directory;
+    OwnCloudSettings settings;
     File localFile;
     String remoteFileName;
 
-    public OwnCloudJob(String servername, String username, String password, String directory,
-                         File localFile, String remoteFileName)
+    public OwnCloudJob(OwnCloudSettings settings, File localFile, String remoteFileName)
     {
         super(new Params(1).requireNetwork().persist().addTags(getJobTag(localFile)));
-        this.servername = servername;
-        this.username = username;
-        this.password = password;
-        this.directory = directory;
+        this.settings= settings;
         this.localFile = localFile;
         this.remoteFileName = remoteFileName;
-
     }
 
     @Override
@@ -80,7 +71,6 @@ public class OwnCloudJob extends Job implements OnRemoteOperationListener {
 
     @Override
     public void onRun() throws Throwable {
-
         LOG.debug("ownCloud Job: Uploading  '" + localFile.getName() + "'");
 
         Protocol pr = Protocol.getProtocol("https");
@@ -95,26 +85,24 @@ public class OwnCloudJob extends Job implements OnRemoteOperationListener {
 
             ProtocolSocketFactory psf = new AdvancedSslSocketFactory(sslContext, new AdvancedX509TrustManager(Networks.getKnownServersStore(AppSettings.getInstance())), null);
 
-
             Protocol.registerProtocol( "https", new Protocol("https", psf, 443));
 
         } catch (GeneralSecurityException e) {
             LOG.error("Self-signed confident SSL context could not be loaded", e);
         }
 
-
-        OwnCloudClient client = OwnCloudClientFactory.createOwnCloudClient(Uri.parse(servername), AppSettings.getInstance(), true);
+        OwnCloudClient client = OwnCloudClientFactory.createOwnCloudClient(Uri.parse(settings.getServername()), AppSettings.getInstance(), true);
         client.setDefaultTimeouts('\uea60', '\uea60');
         client.setFollowRedirects(true);
         client.setCredentials(
-                OwnCloudCredentialsFactory.newBasicCredentials(username, password)
+            OwnCloudCredentialsFactory.newBasicCredentials(settings.getUsername(), settings.getPassword())
         );
 
         //Create the folder, in case it doesn't already exist on OwnCloud.
-        CreateRemoteFolderOperation createOperation = new CreateRemoteFolderOperation(directory, false);
-        createOperation.execute( client);
+        CreateRemoteFolderOperation createOperation = new CreateRemoteFolderOperation(settings.getDirectory(), false);
+        createOperation.execute(client);
 
-        String remotePath = directory + FileUtils.PATH_SEPARATOR + localFile.getName();
+        String remotePath = settings.getDirectory() + FileUtils.PATH_SEPARATOR + localFile.getName();
         String mimeType = "application/octet-stream"; //unused
         UploadRemoteFileOperation uploadOperation = new UploadRemoteFileOperation(localFile.getAbsolutePath(), remotePath, mimeType);
         uploadOperation.execute(client,this,null);
@@ -122,7 +110,6 @@ public class OwnCloudJob extends Job implements OnRemoteOperationListener {
 
     @Override
     protected void onCancel() {
-
         LOG.debug("ownCloud Job: onCancel");
     }
 
@@ -135,7 +122,6 @@ public class OwnCloudJob extends Job implements OnRemoteOperationListener {
 
     @Override
     public void onRemoteOperationFinish(RemoteOperation remoteOperation, RemoteOperationResult result) {
-
         if (!result.isSuccess()) {
             LOG.error(result.getLogMessage(), result.getException());
             EventBus.getDefault().post(new UploadEvents.OwnCloud().failed(result.getLogMessage(), result.getException()));
