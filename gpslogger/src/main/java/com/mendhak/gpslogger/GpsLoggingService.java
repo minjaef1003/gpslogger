@@ -163,116 +163,13 @@ public class GpsLoggingService extends Service  {
             Bundle bundle = intent.getExtras();
 
             if (bundle != null) {
-
-
                 if(!Systems.locationPermissionsGranted(this)){
                     LOG.error("User has not granted permission to access location services. Will not continue!");
                     return;
                 }
-
-                boolean needToStartGpsManager = false;
-
-                if (bundle.getBoolean(IntentConstants.IMMEDIATE_START)) {
-                    LOG.info("Intent received - Start Logging Now");
-                    EventBus.getDefault().post(new CommandEvents.RequestStartStop(true));
-                }
-
-                if (bundle.getBoolean(IntentConstants.IMMEDIATE_STOP)) {
-                    LOG.info("Intent received - Stop logging now");
-                    EventBus.getDefault().post(new CommandEvents.RequestStartStop(false));
-                }
-
-                if (bundle.getBoolean(IntentConstants.GET_STATUS)) {
-                    LOG.info("Intent received - Sending Status by broadcast");
-                    EventBus.getDefault().post(new CommandEvents.GetStatus());
-                }
-
-
-                if (bundle.getBoolean(IntentConstants.AUTOSEND_NOW)) {
-                    LOG.info("Intent received - Send Email Now");
-                    EventBus.getDefault().post(new CommandEvents.AutoSend(null));
-                }
-
-                if (bundle.getBoolean(IntentConstants.GET_NEXT_POINT)) {
-                    LOG.info("Intent received - Get Next Point");
-                    needToStartGpsManager = true;
-                }
-
-                if (bundle.getString(IntentConstants.SET_DESCRIPTION) != null) {
-                    LOG.info("Intent received - Set Next Point Description: " + bundle.getString(IntentConstants.SET_DESCRIPTION));
-                    EventBus.getDefault().post(new CommandEvents.Annotate(bundle.getString(IntentConstants.SET_DESCRIPTION)));
-                }
-
-                if(bundle.getString(IntentConstants.SWITCH_PROFILE) != null){
-                    LOG.info("Intent received - switch profile: " + bundle.getString(IntentConstants.SWITCH_PROFILE));
-                    EventBus.getDefault().post(new ProfileEvents.SwitchToProfile(bundle.getString(IntentConstants.SWITCH_PROFILE)));
-                }
-
-                if (bundle.get(IntentConstants.PREFER_CELLTOWER) != null) {
-                    boolean preferCellTower = bundle.getBoolean(IntentConstants.PREFER_CELLTOWER);
-                    LOG.debug("Intent received - Set Prefer Cell Tower: " + String.valueOf(preferCellTower));
-
-                    if(preferCellTower){
-                        preferenceHelper.setChosenListeners(0);
-                    } else {
-                        preferenceHelper.setChosenListeners(1,2);
-                    }
-
-                    needToStartGpsManager = true;
-                }
-
-                if (bundle.get(IntentConstants.TIME_BEFORE_LOGGING) != null) {
-                    int timeBeforeLogging = bundle.getInt(IntentConstants.TIME_BEFORE_LOGGING);
-                    LOG.debug("Intent received - logging interval: " + String.valueOf(timeBeforeLogging));
-                    preferenceHelper.setMinimumLoggingInterval(timeBeforeLogging);
-                    needToStartGpsManager = true;
-                }
-
-                if (bundle.get(IntentConstants.DISTANCE_BEFORE_LOGGING) != null) {
-                    int distanceBeforeLogging = bundle.getInt(IntentConstants.DISTANCE_BEFORE_LOGGING);
-                    LOG.debug("Intent received - Set Distance Before Logging: " + String.valueOf(distanceBeforeLogging));
-                    preferenceHelper.setMinimumDistanceInMeters(distanceBeforeLogging);
-                    needToStartGpsManager = true;
-                }
-
-                if (bundle.get(IntentConstants.GPS_ON_BETWEEN_FIX) != null) {
-                    boolean keepBetweenFix = bundle.getBoolean(IntentConstants.GPS_ON_BETWEEN_FIX);
-                    LOG.debug("Intent received - Set Keep Between Fix: " + String.valueOf(keepBetweenFix));
-                    preferenceHelper.setShouldKeepGPSOnBetweenFixes(keepBetweenFix);
-                    needToStartGpsManager = true;
-                }
-
-                if (bundle.get(IntentConstants.RETRY_TIME) != null) {
-                    int retryTime = bundle.getInt(IntentConstants.RETRY_TIME);
-                    LOG.debug("Intent received - Set duration to match accuracy: " + String.valueOf(retryTime));
-                    preferenceHelper.setLoggingRetryPeriod(retryTime);
-                    needToStartGpsManager = true;
-                }
-
-                if (bundle.get(IntentConstants.ABSOLUTE_TIMEOUT) != null) {
-                    int absoluteTimeout = bundle.getInt(IntentConstants.ABSOLUTE_TIMEOUT);
-                    LOG.debug("Intent received - Set absolute timeout: " + String.valueOf(absoluteTimeout));
-                    preferenceHelper.setAbsoluteTimeoutForAcquiringPosition(absoluteTimeout);
-                    needToStartGpsManager = true;
-                }
-
-                if(bundle.get(IntentConstants.LOG_ONCE) != null){
-                    boolean logOnceIntent = bundle.getBoolean(IntentConstants.LOG_ONCE);
-                    LOG.debug("Intent received - Log Once: " + String.valueOf(logOnceIntent));
-                    needToStartGpsManager = false;
-                    logOnce();
-                }
-
-                try {
-                    if(bundle.get(Intent.EXTRA_ALARM_COUNT) != "0"){
-                        needToStartGpsManager = true;
-                    }
-                }
-                catch (Throwable t){
-                    LOG.warn(SessionLogcatAppender.MARKER_INTERNAL, "Received a weird EXTRA_ALARM_COUNT value. Cannot continue.");
-                    needToStartGpsManager = false;
-                }
-
+                requestStartStop(bundle);
+                postEtc(bundle);
+                boolean needToStartGpsManager = setGPSLogging(bundle);
 
                 if (needToStartGpsManager && session.isStarted()) {
                     startGpsManager();
@@ -286,6 +183,116 @@ public class GpsLoggingService extends Service  {
             }
 
         }
+    }
+
+    private void postEtc(Bundle bundle) {
+        if (bundle.getBoolean(IntentConstants.GET_STATUS)) {
+            LOG.info("Intent received - Sending Status by broadcast");
+            EventBus.getDefault().post(new CommandEvents.GetStatus());
+        }
+
+
+        if (bundle.getBoolean(IntentConstants.AUTOSEND_NOW)) {
+            LOG.info("Intent received - Send Email Now");
+            EventBus.getDefault().post(new CommandEvents.AutoSend(null));
+        }
+
+        if (bundle.getString(IntentConstants.SET_DESCRIPTION) != null) {
+            LOG.info("Intent received - Set Next Point Description: " + bundle.getString(IntentConstants.SET_DESCRIPTION));
+            EventBus.getDefault().post(new CommandEvents.Annotate(bundle.getString(IntentConstants.SET_DESCRIPTION)));
+        }
+
+        if(bundle.getString(IntentConstants.SWITCH_PROFILE) != null){
+            LOG.info("Intent received - switch profile: " + bundle.getString(IntentConstants.SWITCH_PROFILE));
+            EventBus.getDefault().post(new ProfileEvents.SwitchToProfile(bundle.getString(IntentConstants.SWITCH_PROFILE)));
+        }
+    }
+
+    private void requestStartStop(Bundle bundle) {
+        if (bundle.getBoolean(IntentConstants.IMMEDIATE_START)) {
+            LOG.info("Intent received - Start Logging Now");
+            EventBus.getDefault().post(new CommandEvents.RequestStartStop(true));
+        }
+
+        if (bundle.getBoolean(IntentConstants.IMMEDIATE_STOP)) {
+            LOG.info("Intent received - Stop logging now");
+            EventBus.getDefault().post(new CommandEvents.RequestStartStop(false));
+        }
+    }
+
+    private boolean setGPSLogging(Bundle bundle) {
+        boolean needToStartGpsManager = false;
+
+        if (bundle.getBoolean(IntentConstants.GET_NEXT_POINT)) {
+            LOG.info("Intent received - Get Next Point");
+            needToStartGpsManager = true;
+        }
+
+        if (bundle.get(IntentConstants.PREFER_CELLTOWER) != null) {
+            boolean preferCellTower = bundle.getBoolean(IntentConstants.PREFER_CELLTOWER);
+            LOG.debug("Intent received - Set Prefer Cell Tower: " + String.valueOf(preferCellTower));
+
+            if(preferCellTower){
+                preferenceHelper.setChosenListeners(0);
+            } else {
+                preferenceHelper.setChosenListeners(1,2);
+            }
+
+            needToStartGpsManager = true;
+        }
+
+        if (bundle.get(IntentConstants.TIME_BEFORE_LOGGING) != null) {
+            int timeBeforeLogging = bundle.getInt(IntentConstants.TIME_BEFORE_LOGGING);
+            LOG.debug("Intent received - logging interval: " + String.valueOf(timeBeforeLogging));
+            preferenceHelper.setMinimumLoggingInterval(timeBeforeLogging);
+            needToStartGpsManager = true;
+        }
+
+        if (bundle.get(IntentConstants.DISTANCE_BEFORE_LOGGING) != null) {
+            int distanceBeforeLogging = bundle.getInt(IntentConstants.DISTANCE_BEFORE_LOGGING);
+            LOG.debug("Intent received - Set Distance Before Logging: " + String.valueOf(distanceBeforeLogging));
+            preferenceHelper.setMinimumDistanceInMeters(distanceBeforeLogging);
+            needToStartGpsManager = true;
+        }
+
+        if (bundle.get(IntentConstants.GPS_ON_BETWEEN_FIX) != null) {
+            boolean keepBetweenFix = bundle.getBoolean(IntentConstants.GPS_ON_BETWEEN_FIX);
+            LOG.debug("Intent received - Set Keep Between Fix: " + String.valueOf(keepBetweenFix));
+            preferenceHelper.setShouldKeepGPSOnBetweenFixes(keepBetweenFix);
+            needToStartGpsManager = true;
+        }
+
+        if (bundle.get(IntentConstants.RETRY_TIME) != null) {
+            int retryTime = bundle.getInt(IntentConstants.RETRY_TIME);
+            LOG.debug("Intent received - Set duration to match accuracy: " + String.valueOf(retryTime));
+            preferenceHelper.setLoggingRetryPeriod(retryTime);
+            needToStartGpsManager = true;
+        }
+
+        if (bundle.get(IntentConstants.ABSOLUTE_TIMEOUT) != null) {
+            int absoluteTimeout = bundle.getInt(IntentConstants.ABSOLUTE_TIMEOUT);
+            LOG.debug("Intent received - Set absolute timeout: " + String.valueOf(absoluteTimeout));
+            preferenceHelper.setAbsoluteTimeoutForAcquiringPosition(absoluteTimeout);
+            needToStartGpsManager = true;
+        }
+
+        if(bundle.get(IntentConstants.LOG_ONCE) != null){
+            boolean logOnceIntent = bundle.getBoolean(IntentConstants.LOG_ONCE);
+            LOG.debug("Intent received - Log Once: " + String.valueOf(logOnceIntent));
+            needToStartGpsManager = false;
+            logOnce();
+        }
+
+        try {
+            if(bundle.get(Intent.EXTRA_ALARM_COUNT) != "0"){
+                needToStartGpsManager = true;
+            }
+        }
+        catch (Throwable t){
+            LOG.warn(SessionLogcatAppender.MARKER_INTERNAL, "Received a weird EXTRA_ALARM_COUNT value. Cannot continue.");
+            needToStartGpsManager = false;
+        }
+        return needToStartGpsManager;
     }
 
     /**
