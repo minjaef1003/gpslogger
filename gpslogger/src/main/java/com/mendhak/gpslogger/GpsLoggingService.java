@@ -787,15 +787,7 @@ public class GpsLoggingService extends Service  {
         
 
         //Check if a ridiculous distance has been travelled since previous point - could be a bad GPS jump
-        if(session.getCurrentLocationInfo() != null){
-            double distanceTravelled = Maths.calculateDistance(loc.getLatitude(), loc.getLongitude(), session.getCurrentLocationInfo().getLatitude(), session.getCurrentLocationInfo().getLongitude());
-            long timeDifference = Math.abs(loc.getTime() - session.getCurrentLocationInfo().getTime())/1000;
-            double speed = distanceTravelled/timeDifference;
-            if(speed > 357){ //357 m/s ~=  1285 km/h
-                LOG.warn(String.format("Very large jump detected - %d meters in %d sec - discarding point", (long)distanceTravelled, timeDifference));
-                return;
-            }
-        }
+        if (checkAbnormalDistance(loc)) return;
 
         // Don't do anything until the user-defined accuracy is reached
         // However, if user has set an annotation, just log the point, disregard any filters
@@ -813,7 +805,8 @@ public class GpsLoggingService extends Service  {
                     session.setFirstRetryTimeStamp(System.currentTimeMillis());
                 }
 
-                if (currentTimeStamp - session.getFirstRetryTimeStamp() <= preferenceHelper.getLoggingRetryPeriod() * 1000) {
+                boolean isDuringThePeriod = currentTimeStamp - session.getFirstRetryTimeStamp() <= preferenceHelper.getLoggingRetryPeriod() * 1000;
+                if (isDuringThePeriod) {
                     LOG.warn("Only accuracy of " + String.valueOf(loc.getAccuracy()) + " m. Point discarded." + getString(R.string.inaccurate_point_discarded));
                     //return and keep trying
                     return;
@@ -872,6 +865,19 @@ public class GpsLoggingService extends Service  {
             LOG.debug("Single point mode - stopping now");
             stopLogging();
         }
+    }
+
+    private boolean checkAbnormalDistance(Location loc) {
+        if(session.getCurrentLocationInfo() != null){
+            double distanceTravelled = Maths.calculateDistance(loc.getLatitude(), loc.getLongitude(), session.getCurrentLocationInfo().getLatitude(), session.getCurrentLocationInfo().getLongitude());
+            long timeDifference = Math.abs(loc.getTime() - session.getCurrentLocationInfo().getTime())/1000;
+            double speed = distanceTravelled/timeDifference;
+            if(speed > 357){ //357 m/s ~=  1285 km/h
+                LOG.warn(String.format("Very large jump detected - %d meters in %d sec - discarding point", (long)distanceTravelled, timeDifference));
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isFromValidListener(Location loc) {
