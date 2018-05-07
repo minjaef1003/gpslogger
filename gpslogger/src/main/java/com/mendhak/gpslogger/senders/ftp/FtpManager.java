@@ -34,18 +34,20 @@ import com.path.android.jobqueue.TagConstraint;
 import de.greenrobot.event.EventBus;
 import org.slf4j.Logger;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.util.List;
 
 public class FtpManager extends FileSender {
     private static final Logger LOG = Logs.of(FtpManager.class);
 
-    PreferenceHelper preferenceHelper;
+    private PreferenceHelper preferenceHelper;
 
     public FtpManager(PreferenceHelper preferenceHelper) {
-        this.preferenceHelper = preferenceHelper;
+        this.setPreferenceHelper(preferenceHelper);
+    }
+
+    private static Logger getLOG() {
+        return LOG;
     }
 
     public void testFtp(final String servername, final String username, final String password, final String directory, final int port, final boolean useFtps, final String protocol, final boolean implicit) {
@@ -74,8 +76,8 @@ public class FtpManager extends FileSender {
 
     @Override
     public void uploadFile(List<File> files) {
-        if (!validSettings(preferenceHelper.getFtpServerName(), preferenceHelper.getFtpUsername(), preferenceHelper.getFtpPassword(),
-                preferenceHelper.getFtpPort(), preferenceHelper.shouldFtpUseFtps(), preferenceHelper.getFtpProtocol(), preferenceHelper.isFtpImplicit())) {
+        if (!validSettings(getPreferenceHelper().getFtpServerName(), getPreferenceHelper().getFtpPort(), getPreferenceHelper().shouldFtpUseFtps(),
+                getPreferenceHelper().getFtpProtocol())) {
             EventBus.getDefault().post(new UploadEvents.Ftp().failed());
         }
 
@@ -86,14 +88,13 @@ public class FtpManager extends FileSender {
 
     @Override
     public boolean isAvailable() {
-        return validSettings(preferenceHelper.getFtpServerName(), preferenceHelper.getFtpUsername(),
-                preferenceHelper.getFtpPassword(), preferenceHelper.getFtpPort(), preferenceHelper.shouldFtpUseFtps(),
-                preferenceHelper.getFtpProtocol(), preferenceHelper.isFtpImplicit());
+        return validSettings(getPreferenceHelper().getFtpServerName(), getPreferenceHelper().getFtpPort(), getPreferenceHelper().shouldFtpUseFtps(),
+                getPreferenceHelper().getFtpProtocol());
     }
 
     @Override
     public boolean hasUserAllowedAutoSending() {
-        return preferenceHelper.isFtpAutoSendEnabled();
+        return getPreferenceHelper().isFtpAutoSendEnabled();
     }
 
     public void uploadFile(final File f) {
@@ -102,9 +103,9 @@ public class FtpManager extends FileSender {
         jobManager.cancelJobsInBackground(new CancelResult.AsyncCancelCallback() {
             @Override
             public void onCancelled(CancelResult cancelResult) {
-                jobManager.addJobInBackground(new FtpJob(preferenceHelper.getFtpServerName(), preferenceHelper.getFtpPort(),
-                        preferenceHelper.getFtpUsername(), preferenceHelper.getFtpPassword(), preferenceHelper.getFtpDirectory(),
-                        preferenceHelper.shouldFtpUseFtps(), preferenceHelper.getFtpProtocol(), preferenceHelper.isFtpImplicit(),
+                jobManager.addJobInBackground(new FtpJob(getPreferenceHelper().getFtpServerName(), getPreferenceHelper().getFtpPort(),
+                        getPreferenceHelper().getFtpUsername(), getPreferenceHelper().getFtpPassword(), getPreferenceHelper().getFtpDirectory(),
+                        getPreferenceHelper().shouldFtpUseFtps(), getPreferenceHelper().getFtpProtocol(), getPreferenceHelper().isFtpImplicit(),
                         f, f.getName()));
             }
         }, TagConstraint.ANY, FtpJob.getJobTag(f));
@@ -117,8 +118,8 @@ public class FtpManager extends FileSender {
     }
 
 
-    public boolean validSettings(String servername, String username, String password, Integer port, boolean useFtps,
-                                 String sslTls, boolean implicit) {
+    public boolean validSettings(String servername, Integer port, boolean useFtps,
+                                 String sslTls) {
         boolean retVal = servername != null && servername.length() > 0 && port != null && port > 0;
 
         if (useFtps && (sslTls == null || sslTls.length() <= 0)) {
@@ -126,6 +127,14 @@ public class FtpManager extends FileSender {
         }
 
         return retVal;
+    }
+
+    private PreferenceHelper getPreferenceHelper() {
+        return preferenceHelper;
+    }
+
+    private void setPreferenceHelper(PreferenceHelper preferenceHelper) {
+        this.preferenceHelper = preferenceHelper;
     }
 }
 

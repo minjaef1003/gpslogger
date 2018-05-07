@@ -43,7 +43,7 @@ import java.util.List;
 public class GoogleDriveManager extends FileSender {
 
     private static final Logger LOG = Logs.of(GoogleDriveManager.class);
-    final PreferenceHelper preferenceHelper;
+    private final PreferenceHelper preferenceHelper;
 
     /*
     To revoke permissions:
@@ -58,6 +58,10 @@ public class GoogleDriveManager extends FileSender {
         this.preferenceHelper = preferenceHelper;
     }
 
+    private static Logger getLOG() {
+        return LOG;
+    }
+
     public String getOauth2Scope() {
         return "oauth2:https://www.googleapis.com/auth/drive.file";
     }
@@ -68,7 +72,7 @@ public class GoogleDriveManager extends FileSender {
      *
      */
     public boolean isLinked() {
-        return !Strings.isNullOrEmpty(preferenceHelper.getGoogleDriveAccountName()) && !Strings.isNullOrEmpty(preferenceHelper.getGoogleDriveAuthToken());
+        return !Strings.isNullOrEmpty(getPreferenceHelper().getGoogleDriveAccountName()) && !Strings.isNullOrEmpty(getPreferenceHelper().getGoogleDriveAuthToken());
     }
 
     @Override
@@ -86,7 +90,7 @@ public class GoogleDriveManager extends FileSender {
 
     @Override
     public boolean hasUserAllowedAutoSending() {
-        return preferenceHelper.isGDocsAutoSendEnabled();
+        return getPreferenceHelper().isGDocsAutoSendEnabled();
     }
 
     public void uploadTestFile(File file, String googleDriveFolderName){
@@ -101,15 +105,15 @@ public class GoogleDriveManager extends FileSender {
         }
 
         try {
-            File gpsDir = new File(preferenceHelper.getGpsLoggerFolder());
+            File gpsDir = new File(getPreferenceHelper().getGpsLoggerFolder());
             final File gpxFile = new File(gpsDir, fileName);
 
-            LOG.debug("Submitting Google Docs job");
+            getLOG().debug("Submitting Google Docs job");
 
             String uploadFolderName = googleDriveFolderName;
 
             if(Strings.isNullOrEmpty(googleDriveFolderName)){
-                uploadFolderName = preferenceHelper.getGoogleDriveFolderName();
+                uploadFolderName = getPreferenceHelper().getGoogleDriveFolderName();
             }
 
             if(Strings.isNullOrEmpty(uploadFolderName)){
@@ -128,7 +132,7 @@ public class GoogleDriveManager extends FileSender {
 
         } catch (Exception e) {
             EventBus.getDefault().post(new UploadEvents.GDrive().failed("Failed to upload file", e));
-            LOG.error("GoogleDriveManager.uploadFile", e);
+            getLOG().error("GoogleDriveManager.uploadFile", e);
         }
     }
 
@@ -138,11 +142,14 @@ public class GoogleDriveManager extends FileSender {
     }
 
     public String getToken() throws GoogleAuthException, IOException {
-        String token = GoogleAuthUtil.getTokenWithNotification(AppSettings.getInstance(), preferenceHelper.getGoogleDriveAccountName(), getOauth2Scope(), new Bundle());
-        LOG.debug("GDrive token: " + token);
-        preferenceHelper.setGoogleDriveAuthToken(token);
+        String token = GoogleAuthUtil.getTokenWithNotification(AppSettings.getInstance(), getPreferenceHelper().getGoogleDriveAccountName(), getOauth2Scope(), new Bundle());
+        getLOG().debug("GDrive token: " + token);
+        getPreferenceHelper().setGoogleDriveAuthToken(token);
         return token;
     }
 
 
+    private PreferenceHelper getPreferenceHelper() {
+        return preferenceHelper;
+    }
 }
