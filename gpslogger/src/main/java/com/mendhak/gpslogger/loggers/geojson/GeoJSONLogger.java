@@ -21,10 +21,10 @@ public class GeoJSONLogger implements FileLogger {
     protected final String name;
     private final boolean addNewTrackSegment;
 
-    public GeoJSONLogger(File file, boolean addNewTrackSegment) {
-        this.file = file;
+    public GeoJSONLogger(File setFile, boolean setAddNewTrackSegment) {
+        this.file = setFile;
         name = "GeoJSON";
-        this.addNewTrackSegment = addNewTrackSegment;
+        this.addNewTrackSegment = setAddNewTrackSegment;
     }
 
     @Override

@@ -111,48 +111,36 @@ public class Strings {
      * @param bearingDegrees
      * @return
      */
-    public static String getBearingDescription(float bearingDegrees,
-                                               Context context) {
-
+    public static String getBeringDescription(float bearingDegrees,
+                                              Context context) {
+        List bearingDescriptionList = new ArrayList();
+        bearingDescriptionList.add(context.getString(R.string.direction_north));
+        bearingDescriptionList.add(context.getString(R.string.direction_northnortheast));
+        bearingDescriptionList.add(context.getString(R.string.direction_northeast));
+        bearingDescriptionList.add(context.getString(R.string.direction_eastnortheast));
+        bearingDescriptionList.add(context.getString(R.string.direction_east));
+        bearingDescriptionList.add(context.getString(R.string.direction_eastsoutheast));
+        bearingDescriptionList.add(context.getString(R.string.direction_southeast));
+        bearingDescriptionList.add(context.getString(R.string.direction_southsoutheast));
+        bearingDescriptionList.add(context.getString(R.string.direction_south));
+        bearingDescriptionList.add(context.getString(R.string.direction_southsouthwest));
+        bearingDescriptionList.add(context.getString(R.string.direction_southwest));
+        bearingDescriptionList.add(context.getString(R.string.direction_westsouthwest));
+        bearingDescriptionList.add(context.getString(R.string.direction_west));
+        bearingDescriptionList.add(context.getString(R.string.direction_westnorthwest));
+        bearingDescriptionList.add(context.getString(R.string.direction_northwest));
+        bearingDescriptionList.add(context.getString(R.string.direction_northnorthwest));
+        bearingDescriptionList.add(context.getString(R.string.unknown_direction));
         String direction;
         String cardinal;
 
-        if (bearingDegrees > 348.75 || bearingDegrees <= 11.25) {
-            cardinal = context.getString(R.string.direction_north);
-        } else if (bearingDegrees > 11.25 && bearingDegrees <= 33.75) {
-            cardinal = context.getString(R.string.direction_northnortheast);
-        } else if (bearingDegrees > 33.75 && bearingDegrees <= 56.25) {
-            cardinal = context.getString(R.string.direction_northeast);
-        } else if (bearingDegrees > 56.25 && bearingDegrees <= 78.75) {
-            cardinal = context.getString(R.string.direction_eastnortheast);
-        } else if (bearingDegrees > 78.75 && bearingDegrees <= 101.25) {
-            cardinal = context.getString(R.string.direction_east);
-        } else if (bearingDegrees > 101.25 && bearingDegrees <= 123.75) {
-            cardinal = context.getString(R.string.direction_eastsoutheast);
-        } else if (bearingDegrees > 123.75 && bearingDegrees <= 146.26) {
-            cardinal = context.getString(R.string.direction_southeast);
-        } else if (bearingDegrees > 146.25 && bearingDegrees <= 168.75) {
-            cardinal = context.getString(R.string.direction_southsoutheast);
-        } else if (bearingDegrees > 168.75 && bearingDegrees <= 191.25) {
-            cardinal = context.getString(R.string.direction_south);
-        } else if (bearingDegrees > 191.25 && bearingDegrees <= 213.75) {
-            cardinal = context.getString(R.string.direction_southsouthwest);
-        } else if (bearingDegrees > 213.75 && bearingDegrees <= 236.25) {
-            cardinal = context.getString(R.string.direction_southwest);
-        } else if (bearingDegrees > 236.25 && bearingDegrees <= 258.75) {
-            cardinal = context.getString(R.string.direction_westsouthwest);
-        } else if (bearingDegrees > 258.75 && bearingDegrees <= 281.25) {
-            cardinal = context.getString(R.string.direction_west);
-        } else if (bearingDegrees > 281.25 && bearingDegrees <= 303.75) {
-            cardinal = context.getString(R.string.direction_westnorthwest);
-        } else if (bearingDegrees > 303.75 && bearingDegrees <= 326.25) {
-            cardinal = context.getString(R.string.direction_northwest);
-        } else if (bearingDegrees > 326.25 && bearingDegrees <= 348.75) {
-            cardinal = context.getString(R.string.direction_northnorthwest);
-        } else {
-            direction = context.getString(R.string.unknown_direction);
-            return direction;
+        double caseOfBearingDegrees = Math.ceil(bearingDegrees/22.5) + 0.5;
+        if(caseOfBearingDegrees > 16 && caseOfBearingDegrees <= 16.5){
+            caseOfBearingDegrees = 0;
         }
+        caseOfBearingDegrees = Math.floor(caseOfBearingDegrees);
+        int caseOfBearingDegreesInteger = (int)caseOfBearingDegrees;
+        cardinal = bearingDescriptionList.get(caseOfBearingDegreesInteger).toString();
 
         direction = context.getString(R.string.direction_roughly, cardinal);
         return direction;
@@ -166,18 +154,23 @@ public class Strings {
      * @param desc
      * @return
      */
+    private static String getReplace(String desc, String charSequence, String charSequence1) {
+        return desc.replace(charSequence, charSequence1);
+    }
     public static String cleanDescriptionForXml(String desc) {
-        desc = desc.replace("<", "");
-        desc = desc.replace(">", "");
-        desc = desc.replace("&", "&amp;");
-        desc = desc.replace("\"", "&quot;");
+        desc = getReplace(desc, "<", "");
+        desc = getReplace(desc,">", "");
+        desc = getReplace(desc,"&", "&amp;");
+        desc = getReplace(desc,"\"", "&quot;");
 
         return desc;
     }
 
+
+
     public static String cleanDescriptionForJson(String desc){
-        desc = desc.replace("\"", "");
-        desc = desc.replace("\\","");
+        desc = getReplace(desc,"\"", "");
+        desc = getReplace(desc,"\\","");
         return desc;
     }
 
@@ -252,14 +245,22 @@ public class Strings {
 
     public static String getFormattedFileName(Session session, PreferenceHelper ph) {
         String currentFileName = session.getCurrentFileName();
-        if (ph.shouldCreateCustomFile() && !Strings.isNullOrEmpty(currentFileName)) {
+        if (phShouldCreateCustomFileAndNoIsNullOrEmpty(ph, currentFileName)) {
             return getFormattedCustomFileName(currentFileName, GregorianCalendar.getInstance(), ph);
         } else {
-            if (!Strings.isNullOrEmpty(currentFileName) && ph.shouldPrefixSerialToFileName() && !currentFileName.contains(String.valueOf(getBuildSerial()))) {
+            if (notIsNullOrEmptyFileNameAndShouldPrefixSerialToFileNameAndCurrentFileNameIsNotContainBuildSerial(ph, currentFileName)) {
                 currentFileName = String.valueOf(getBuildSerial()) + "_" + currentFileName;
             }
         }
         return currentFileName;
+    }
+
+    private static boolean notIsNullOrEmptyFileNameAndShouldPrefixSerialToFileNameAndCurrentFileNameIsNotContainBuildSerial(PreferenceHelper ph, String currentFileName) {
+        return !Strings.isNullOrEmpty(currentFileName) && ph.shouldPrefixSerialToFileName() && !currentFileName.contains(String.valueOf(getBuildSerial()));
+    }
+
+    private static boolean phShouldCreateCustomFileAndNoIsNullOrEmpty(PreferenceHelper ph, String currentFileName) {
+        return ph.shouldCreateCustomFile() && !Strings.isNullOrEmpty(currentFileName);
     }
 
     public static String getFormattedCustomFileName(String baseName, Calendar calendar, PreferenceHelper ph){
@@ -307,18 +308,26 @@ public class Strings {
         String result = df.format(meters) + context.getString(R.string.meters);
 
         if(imperial){
-            if (!autoscale || (meters <= 804)){
+            if (isNotAutoscaleOrMeterBelow804(meters, autoscale)){
                 result = df.format(meters * 3.2808399) + context.getString(R.string.feet);
             }
             else {
                 result = df.format(meters/1609.344) + context.getString(R.string.miles);
             }
         }
-        else if(autoscale && (meters >= 1000)) {
+        else if(isAutoscaleAndMetersOver1000(meters, autoscale)) {
             result = df.format(meters/1000) + context.getString(R.string.kilometers);
         }
 
         return result;
+    }
+
+    private static boolean isNotAutoscaleOrMeterBelow804(double meters, boolean autoscale) {
+        return !autoscale || (meters <= 804);
+    }
+
+    private static boolean isAutoscaleAndMetersOver1000(double meters, boolean autoscale) {
+        return autoscale && (meters >= 1000);
     }
 
     public static String getTimeDisplay(Context context, long milliseconds) {
@@ -351,7 +360,7 @@ public class Strings {
                 displayName = new Locale(foundLocale).getDisplayName(new Locale("en"));
             }
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            if (isSdkOverLollipop()) {
                 displayName = Locale.forLanguageTag(foundLocale).getDisplayName(Locale.forLanguageTag(foundLocale));
 
                 if (displayName.equalsIgnoreCase(foundLocale)) {
@@ -366,6 +375,10 @@ public class Strings {
         return locales;
     }
 
+    private static boolean isSdkOverLollipop() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
+    }
+
     public static String getSanitizedMarkdownForFaqView(String md){
         if(Strings.isNullOrEmpty(md)){ return "";}
 
@@ -376,13 +389,13 @@ public class Strings {
         Matcher imgMatcher = Pattern.compile("(!\\[[^\\]]+\\]\\((?!http)[^\\)]+\\))", Pattern.MULTILINE).matcher(md);
         while(imgMatcher.find()){
             String group = imgMatcher.group(1);
-            output = output.replace(group,"");
+            output = getReplace(output,group,"");
         }
 
         Matcher linkMatcher = Pattern.compile("\\[[^\\]]+\\]\\(((?!http)[^\\)]+)\\)", Pattern.MULTILINE).matcher(md);
         while(linkMatcher.find()){
             String group = linkMatcher.group(1);
-            output = output.replace(group,"http://code.mendhak.com/gpslogger/"+group);
+            output = getReplace(output,group,"http://code.mendhak.com/gpslogger/"+group);
         }
 
         return output;

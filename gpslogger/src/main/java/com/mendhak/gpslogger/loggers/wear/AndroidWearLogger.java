@@ -36,10 +36,7 @@ import org.slf4j.Logger;
 
 import java.util.Date;
 
-public class AndroidWearLogger implements FileLogger, GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
-
-
+public class AndroidWearLogger implements FileLogger, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private static final Logger LOG = Logs.of(AndroidWearLogger.class);
     private GoogleApiClient googleClient;
     private Context context;
@@ -48,12 +45,10 @@ public class AndroidWearLogger implements FileLogger, GoogleApiClient.Connection
 
     public AndroidWearLogger(Context context){
         this.context = context;
-
     }
 
     @Override
     public void write(Location loc) throws Exception {
-
         this.loc = loc;
 
         LOG.debug("Android wear logger - connect to device");
