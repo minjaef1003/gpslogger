@@ -42,18 +42,34 @@ public class Maths {
             All angles are in radians
             */
 
-        double deltaLatitude = Math.toRadians(Math.abs(latitude1 - latitude2));
-        double deltaLongitude = Math.toRadians(Math.abs(longitude1 - longitude2));
-        double latitude1Rad = Math.toRadians(latitude1);
-        double latitude2Rad = Math.toRadians(latitude2);
+        double deltaLatitude = getDeltaLatitude(latitude1, latitude2);
+        double deltaLongitude = getDeltaLatitude(longitude1, longitude2);
+        double latitude1Rad = getLatitudeToRad(latitude1);
+        double latitude2Rad = getLatitudeToRad(latitude2);
 
-        double a = Math.pow(Math.sin(deltaLatitude / 2), 2) +
-                (Math.cos(latitude1Rad) * Math.cos(latitude2Rad) * Math.pow(Math.sin(deltaLongitude / 2), 2));
+        double a = getaVar(deltaLatitude, deltaLongitude, latitude1Rad, latitude2Rad);
 
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double c = getcVar(a);
 
         return 6371 * c * 1000; //Distance in meters
 
+    }
+
+    private static double getcVar(double a) {
+        return 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    private static double getaVar(double deltaLatitude, double deltaLongitude, double latitude1Rad, double latitude2Rad) {
+        return Math.pow(Math.sin(deltaLatitude / 2), 2) +
+                (Math.cos(latitude1Rad) * Math.cos(latitude2Rad) * Math.pow(Math.sin(deltaLongitude / 2), 2));
+    }
+
+    private static double getLatitudeToRad(double latitude1) {
+        return Math.toRadians(latitude1);
+    }
+
+    private static double getDeltaLatitude(double latitude1, double latitude2) {
+        return Math.toRadians(Math.abs(latitude1 - latitude2));
     }
 
     /**
@@ -78,12 +94,17 @@ public class Maths {
         if(loc.getExtras() != null){
             sat = loc.getExtras().getInt("satellites",0);
 
-            if (sat == 0) {
-                //Provider gave us nothing, let's look at our bundled count
-                sat = loc.getExtras().getInt(BundleConstants.SATELLITES_FIX, 0);
-            }
+            sat = getSat(loc, sat);
         }
 
+        return sat;
+    }
+
+    private static int getSat(Location loc, int sat) {
+        if (sat == 0) {
+            //Provider gave us nothing, let's look at our bundled count
+            sat = loc.getExtras().getInt(BundleConstants.SATELLITES_FIX, 0);
+        }
         return sat;
     }
 
