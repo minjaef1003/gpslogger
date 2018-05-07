@@ -31,46 +31,29 @@ import org.slf4j.Logger;
 
 import java.net.*;
 
-
 public class OpenGtsUdpJob extends Job {
+    private OpenGtsUdpJobData openGtsUdpJobData;
 
-    String server;
-    int port ;
-    String accountName ;
-    String path ;
-    String deviceId ;
-    String communication;
-    SerializableLocation[] locations;
     private static final Logger LOG = Logs.of(OpenGtsUdpJob.class);
 
     public OpenGtsUdpJob(String server, int port, String accountName, String path, String deviceId, String communication, SerializableLocation[] locations){
         super(new Params(1).requireNetwork().persist());
-
-        this.server = server;
-        this.port = port;
-        this.accountName = accountName;
-        this.path = path;
-        this.deviceId = deviceId;
-        this.communication = communication;
-        this.locations = locations;
+        this.openGtsUdpJobData.setGpsUdpJobData(server, port, accountName, path, deviceId, communication, locations);
     }
 
     @Override
     public void onAdded() {
-
     }
 
     @Override
     public void onRun() throws Throwable {
-
         LOG.debug("Running OpenGTS Job");
-        sendRAW(deviceId, accountName, locations);
+        sendRAW(openGtsUdpJobData.getDeviceId(), openGtsUdpJobData.getAccountName(), openGtsUdpJobData.getLocations());
         EventBus.getDefault().post(new UploadEvents.OpenGTS().succeeded());
     }
 
     @Override
     protected void onCancel() {
-
     }
 
     @Override
@@ -80,8 +63,6 @@ public class OpenGtsUdpJob extends Job {
         return false;
     }
 
-
-
     public void sendRAW(String id, String accountName, SerializableLocation[] locations) throws Exception {
         for (SerializableLocation loc : locations) {
             if(Strings.isNullOrEmpty(accountName)){
@@ -90,15 +71,10 @@ public class OpenGtsUdpJob extends Job {
             String message = accountName + "/" + id + "/" + OpenGTSManager.gprmcEncode(loc);
             DatagramSocket socket = new DatagramSocket();
             byte[] buffer = message.getBytes();
-            DatagramPacket packet = new DatagramPacket(buffer, buffer.length, InetAddress.getByName(server), port);
+            DatagramPacket packet = new DatagramPacket(buffer, buffer.length, InetAddress.getByName(this.openGtsUdpJobData.getServer()), this.openGtsUdpJobData.getPort());
             LOG.debug("Sending UDP " + message);
             socket.send(packet);
             socket.close();
         }
     }
-
-
-
-
-
 }

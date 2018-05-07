@@ -41,19 +41,15 @@ public class Files {
      * @return
      */
     public static String getMimeType(String fileName) {
-
         if (fileName == null || fileName.length() == 0) {
             return "";
         }
-
 
         int pos = fileName.lastIndexOf(".");
         if (pos == -1) {
             return "application/octet-stream";
         } else {
-
             String extension = fileName.substring(pos + 1, fileName.length());
-
 
             if (extension.equalsIgnoreCase("gpx")) {
                 return "application/gpx+xml";
@@ -70,7 +66,6 @@ public class Files {
     }
 
     public static void addToMediaDatabase(File file, String mimeType){
-
         MediaScannerConnection.scanFile(AppSettings.getInstance(),
                 new String[]{file.getPath()},
                 new String[]{mimeType},
@@ -82,7 +77,6 @@ public class Files {
     }
 
     public static File[] fromFolder(File folder, FilenameFilter filter) {
-
         if (folder == null || !folder.exists() || folder.listFiles() == null) {
             return new File[]{};
         } else {
