@@ -43,9 +43,9 @@ public class Kml22FileLogger implements FileLogger {
     protected final String name = "KML";
 
 
-    public Kml22FileLogger(File kmlFile, boolean addNewTrackSegment) {
-        this.kmlFile = kmlFile;
-        this.addNewTrackSegment = addNewTrackSegment;
+    public Kml22FileLogger(File setKmlFile, boolean setAddNewTrackSegment) {
+        this.kmlFile = setKmlFile;
+        this.addNewTrackSegment = setAddNewTrackSegment;
     }
 
 
@@ -75,10 +75,10 @@ class Kml22AnnotateHandler implements Runnable {
     Location loc;
     int kmlAnnotationOffset = 258;
 
-    public Kml22AnnotateHandler(File kmlFile, String description, Location loc) {
-        this.kmlFile = kmlFile;
-        this.description = description;
-        this.loc = loc;
+    public Kml22AnnotateHandler(File setKmlFile, String setDescription, Location setLoc) {
+        this.kmlFile = setKmlFile;
+        this.description = setDescription;
+        this.loc = setLoc;
     }
 
 
@@ -143,11 +143,10 @@ class Kml22WriteHandler implements Runnable {
     Location loc;
 
 
-    public Kml22WriteHandler(Location loc, File kmlFile, boolean addNewTrackSegment) {
-
-        this.loc = loc;
-        this.kmlFile = kmlFile;
-        this.addNewTrackSegment = addNewTrackSegment;
+    public Kml22WriteHandler(Location setLoc, File setKmlFile, boolean setAddNewTrackSegment) {
+        this.loc = setLoc;
+        this.kmlFile = setKmlFile;
+        this.addNewTrackSegment = setAddNewTrackSegment;
     }
 
 

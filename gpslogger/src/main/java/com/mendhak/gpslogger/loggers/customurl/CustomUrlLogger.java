@@ -43,13 +43,13 @@ public class CustomUrlLogger implements FileLogger {
     private final String httpBody;
     private final String httpHeaders;
 
-    public CustomUrlLogger(String customLoggingUrl, int batteryLevel, String androidId, String httpMethod, String httpBody, String httpHeaders) {
-        this.customLoggingUrl = customLoggingUrl;
-        this.batteryLevel = batteryLevel;
-        this.androidId = androidId;
-        this.httpMethod = httpMethod;
-        this.httpBody = httpBody;
-        this.httpHeaders = httpHeaders;
+    public CustomUrlLogger(String setCustomLoggingUrl, int setBatteryLevel, String setAndroidId, String setHttpMethod, String setHttpBody, String setHttpHeaders) {
+        this.customLoggingUrl = setCustomLoggingUrl;
+        this.batteryLevel = setBatteryLevel;
+        this.androidId = setAndroidId;
+        this.httpMethod = setHttpMethod;
+        this.httpBody = setHttpBody;
+        this.httpHeaders = setHttpHeaders;
     }
 
     @Override

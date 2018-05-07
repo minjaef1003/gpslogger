@@ -39,10 +39,10 @@ public class GeoJSONWriterPoints implements Runnable {
     private File file;
     private Location location;
 
-    public GeoJSONWriterPoints(File file, Location location, String desc, boolean addNewTrackSegment) {
-        this.file = file;
-        this.location = location;
-        this.desc = desc;
+    public GeoJSONWriterPoints(File setFile, Location setLocation, String setDesc) {
+        this.file = setFile;
+        this.location = setLocation;
+        this.desc = setDesc;
     }
 
     @Override
