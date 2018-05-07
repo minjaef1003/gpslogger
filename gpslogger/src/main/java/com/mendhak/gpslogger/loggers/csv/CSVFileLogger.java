@@ -42,9 +42,9 @@ public class CSVFileLogger implements FileLogger {
     private File file;
     protected final String name = "TXT";
 
-    public CSVFileLogger(File file, @Nullable Integer batteryLevel) {
-        this.file = file;
-        this.batteryLevel = batteryLevel;
+    public CSVFileLogger(File setfile, @Nullable Integer setbatteryLevel) {
+        this.file = setfile;
+        this.batteryLevel = setbatteryLevel;
     }
 
     @Override
