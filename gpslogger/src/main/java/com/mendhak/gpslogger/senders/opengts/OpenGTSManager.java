@@ -27,6 +27,7 @@ import com.mendhak.gpslogger.loggers.customurl.CustomUrlRequest;
 import com.mendhak.gpslogger.loggers.opengts.OpenGtsUdpJob;
 import com.mendhak.gpslogger.senders.FileSender;
 import com.mendhak.gpslogger.senders.GpxReader;
+import com.mendhak.gpslogger.senders.SettingsFactory;
 import com.path.android.jobqueue.JobManager;
 import org.slf4j.Logger;
 
@@ -62,35 +63,33 @@ public class OpenGTSManager extends FileSender {
     public void sendLocations(SerializableLocation[] locations){
         if (locations.length > 0) {
 
-            String server = preferenceHelper.getOpenGTSServer();
-            int port = Integer.parseInt(preferenceHelper.getOpenGTSServerPort());
-            String path = preferenceHelper.getOpenGTSServerPath();
-            String deviceId = preferenceHelper.getOpenGTSDeviceId();
-            String accountName = preferenceHelper.getOpenGTSAccountName();
-            String communication = preferenceHelper.getOpenGTSServerCommunicationMethod();
+            OpenGTSSettings openGTSSettings = SettingsFactory.getOpenGTSSettings(preferenceHelper);
 
-            if(communication.equalsIgnoreCase("udp")){
+            if(openGTSSettings.getCommunicationMethod().equalsIgnoreCase("udp")){
                 JobManager jobManager = AppSettings.getJobManager();
-                jobManager.addJobInBackground(new OpenGtsUdpJob(server, port, accountName, path, deviceId, communication, locations));
+                jobManager.addJobInBackground(new OpenGtsUdpJob(openGTSSettings.getServer(),
+                                                                openGTSSettings.getPort(),
+                                                                openGTSSettings.getAccountName(),
+                                                                openGTSSettings.getServerPath(),
+                                                                openGTSSettings.getDeviceID(),
+                                                                openGTSSettings.getCommunicationMethod(),
+                                                                locations));
             }
             else {
-                sendByHttp(deviceId, accountName, locations, communication, path, server, port);
+                sendByHttp(openGTSSettings, locations);
             }
 
         }
     }
 
-    void sendByHttp(String deviceId, String accountName, SerializableLocation[] locations, String communication, String path, String server, int port) {
+    void sendByHttp(OpenGTSSettings openGTSSettings, SerializableLocation[] locations) {
         for(SerializableLocation loc:locations){
-            String finalUrl = getUrl(deviceId, accountName, loc, communication, path, server, port );
+            String finalUrl = getUrl(openGTSSettings, loc);
 
             JobManager jobManager = AppSettings.getJobManager();
             jobManager.addJobInBackground(new CustomUrlJob(new CustomUrlRequest(finalUrl), new UploadEvents.OpenGTS()));
         }
     }
-
-
-
 
     /**
      * Encode a location as GPRMC string data.
@@ -162,15 +161,14 @@ public class OpenGTSManager extends FileSender {
         return chk_s;
     }
 
-
-    public static String getUrl(String id, String accountName, SerializableLocation loc, String communication, String path, String server, int port) {
+    public static String getUrl(OpenGTSSettings settings, SerializableLocation loc) {
         List<AbstractMap.SimpleEntry<String,String>> qparams = new ArrayList<>();
-        qparams.add(new AbstractMap.SimpleEntry<>("id", id));
-        qparams.add(new AbstractMap.SimpleEntry<>("dev", id));
-        if (!Strings.isNullOrEmpty(accountName)) {
-            qparams.add(new AbstractMap.SimpleEntry<>("acct", accountName));
+        qparams.add(new AbstractMap.SimpleEntry<>("id", settings.getDeviceID()));
+        qparams.add(new AbstractMap.SimpleEntry<>("dev", settings.getDeviceID()));
+        if (!Strings.isNullOrEmpty(settings.getAccountName())) {
+            qparams.add(new AbstractMap.SimpleEntry<>("acct", settings.getAccountName()));
         } else {
-            qparams.add(new AbstractMap.SimpleEntry<>("acct", id));
+            qparams.add(new AbstractMap.SimpleEntry<>("acct", settings.getDeviceID()));
         }
 
         //OpenGTS 2.5.5 requires batt param or it throws exception...
@@ -179,12 +177,12 @@ public class OpenGTSManager extends FileSender {
         qparams.add(new AbstractMap.SimpleEntry<>("alt", String.valueOf(loc.getAltitude())));
         qparams.add(new AbstractMap.SimpleEntry<>("gprmc", OpenGTSManager.gprmcEncode(loc)));
 
-        if(path.startsWith("/")){
-            path = path.replaceFirst("/","");
+        if(settings.getServerPath().startsWith("/")){
+            settings.setServerPath(settings.getServerPath().replaceFirst("/",""));
         }
 
-        return String.format("%s://%s:%d/%s?%s",communication.toLowerCase(),server,port,path,getQuery(qparams));
-
+        return String.format("%s://%s:%d/%s?%s",settings.getCommunicationMethod().toLowerCase(),
+                                settings.getServer(),settings.getPort(),settings.getServerPath(),getQuery(qparams));
     }
 
     private static String getQuery(List<AbstractMap.SimpleEntry<String, String>> params)
@@ -211,11 +209,8 @@ public class OpenGTSManager extends FileSender {
 
     @Override
     public boolean isAvailable() {
-        return !Strings.isNullOrEmpty(preferenceHelper.getOpenGTSServer())
-                && !Strings.isNullOrEmpty(preferenceHelper.getOpenGTSServerPort())
-                && Strings.toInt(preferenceHelper.getOpenGTSServerPort(), 0) != 0
-                && !Strings.isNullOrEmpty(preferenceHelper.getOpenGTSServerCommunicationMethod())
-                && !Strings.isNullOrEmpty(preferenceHelper.getOpenGTSDeviceId());
+        OpenGTSSettings settings = SettingsFactory.getOpenGTSSettings(preferenceHelper);
+        return settings.validSettings();
     }
 
     @Override

@@ -1,10 +1,23 @@
 package com.mendhak.gpslogger.senders;
 
+import com.mendhak.gpslogger.senders.opengts.OpenGTSSettings;
 import com.mendhak.gpslogger.senders.owncloud.OwnCloudSettings;
 import com.mendhak.gpslogger.senders.sftp.SFTPSettings;
 import com.mendhak.gpslogger.common.PreferenceHelper;
 
 public class SettingsFactory {
+    public static OpenGTSSettings getOpenGTSSettings(PreferenceHelper preferenceHelper) {
+        OpenGTSSettings openGTSSettings = new OpenGTSSettings();
+
+        openGTSSettings.setServer(preferenceHelper.getOpenGTSServer());
+        openGTSSettings.setPort(preferenceHelper.getOpenGTSServerPort());
+        openGTSSettings.setServerPath(preferenceHelper.getOpenGTSServerPath());
+        openGTSSettings.setDeviceID(preferenceHelper.getOpenGTSDeviceId());
+        openGTSSettings.setAccountName(preferenceHelper.getOpenGTSAccountName());
+        openGTSSettings.setCommunicationMethod(preferenceHelper.getOpenGTSServerCommunicationMethod());
+
+        return openGTSSettings;
+    }
 
     public static OwnCloudSettings getOwnCloudSettings(PreferenceHelper preferenceHelper) {
         OwnCloudSettings ownCloudSettings = new OwnCloudSettings();
