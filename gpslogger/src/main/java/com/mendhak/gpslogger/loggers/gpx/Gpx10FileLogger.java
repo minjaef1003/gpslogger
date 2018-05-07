@@ -46,16 +46,21 @@ public class Gpx10FileLogger implements FileLogger {
     private final boolean addNewTrackSegment;
     protected final String name = "GPX";
 
-    public Gpx10FileLogger(File gpxFile, boolean addNewTrackSegment) {
-        this.gpxFile = gpxFile;
-        this.addNewTrackSegment = addNewTrackSegment;
+    public Gpx10FileLogger(File setGpxFile, boolean setAddNewTrackSegment) {
+        this.gpxFile = setGpxFile;
+        this.addNewTrackSegment = setAddNewTrackSegment;
+    }
+    
+    public long getCurrentTime(Location loc) {
+        long resultTime = loc.getTime();
+        if (resultTime <= 0) {
+            resultTime = System.currentTimeMillis();
+        }
+        return resultTime;
     }
 
     public void write(Location loc) throws Exception {
-        long time = loc.getTime();
-        if (time <= 0) {
-            time = System.currentTimeMillis();
-        }
+        long time = getCurrentTime(loc);
         String dateTimeString = Strings.getIsoDateTime(new Date(time));
 
         Runnable writeHandler = getWriteHandler(dateTimeString, gpxFile, loc, addNewTrackSegment);
@@ -71,10 +76,7 @@ public class Gpx10FileLogger implements FileLogger {
 
         description = Strings.cleanDescriptionForXml(description);
 
-        long time = loc.getTime();
-        if (time <= 0) {
-            time = System.currentTimeMillis();
-        }
+        long time = getCurrentTime(loc);
         String dateTimeString = Strings.getIsoDateTime(new Date(time));
 
         Runnable annotateHandler = getAnnotateHandler(description, gpxFile, loc, dateTimeString);
