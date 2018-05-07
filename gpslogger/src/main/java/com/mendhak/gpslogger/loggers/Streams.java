@@ -34,7 +34,6 @@ public class Streams {
     private static final Logger LOG = Logs.of(Streams.class);
 
     public static byte[] getByteArrayFromInputStream(InputStream is) {
-
         try {
             int length;
             int size = 1024;
@@ -138,11 +137,9 @@ public class Streams {
             return res;
         }
         catch (Exception ex){
-
             LOG.error("Could not close a stream properly", ex);
         }
 
         return 0;
-
     }
 }
