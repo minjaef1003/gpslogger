@@ -39,38 +39,46 @@ public class AndroidWearListenerService extends WearableListenerService {
     public void onMessageReceived(MessageEvent messageEvent) {
 
         if (messageEvent.getPath().equals("/start_stop")) {
-            final String message = new String(messageEvent.getData());
-            LOG.debug("Message path received on mob is: " + messageEvent.getPath());
-            LOG.debug("Message received on mob is: " + message);
-
-            LOG.debug("Session started: " + session.isStarted());
-
-            Intent serviceIntent = new Intent(getApplicationContext(), GpsLoggingService.class);
-            if(session.isStarted()){
-                serviceIntent.putExtra(IntentConstants.IMMEDIATE_STOP,true);
-            }
-            else {
-                serviceIntent.putExtra(IntentConstants.IMMEDIATE_START,true);
-            }
-
-            getApplicationContext().startService(serviceIntent);
+            sessionStartOrStop(messageEvent);
 
         }
         else if(messageEvent.getPath().equals("/get_status")){
             LOG.debug("Get Status request from Android Wear");
 
-            try {
-
-                Location loc = session.getCurrentLocationInfo() == null ?  session.getPreviousLocationInfo(): session.getCurrentLocationInfo();
-                AndroidWearLogger logger = new AndroidWearLogger(getApplicationContext());
-                logger.write(loc);
-
-            } catch (Exception e) {
-                LOG.error("Could not send latest location info to Android Wear", e);
-            }
+            sendLatestLocation();
         }
         else {
             super.onMessageReceived(messageEvent);
+        }
+    }
+
+    private void sessionStartOrStop(MessageEvent messageEvent) {
+        final String message = new String(messageEvent.getData());
+        LOG.debug("Message path received on mob is: " + messageEvent.getPath());
+        LOG.debug("Message received on mob is: " + message);
+
+        LOG.debug("Session started: " + session.isStarted());
+
+        Intent serviceIntent = new Intent(getApplicationContext(), GpsLoggingService.class);
+        if(session.isStarted()){
+            serviceIntent.putExtra(IntentConstants.IMMEDIATE_STOP,true);
+        }
+        else {
+            serviceIntent.putExtra(IntentConstants.IMMEDIATE_START,true);
+        }
+
+        getApplicationContext().startService(serviceIntent);
+    }
+
+    private void sendLatestLocation() {
+        try {
+
+            Location loc = session.getCurrentLocationInfo() == null ?  session.getPreviousLocationInfo(): session.getCurrentLocationInfo();
+            AndroidWearLogger logger = new AndroidWearLogger(getApplicationContext());
+            logger.write(loc);
+
+        } catch (Exception e) {
+            LOG.error("Could not send latest location info to Android Wear", e);
         }
     }
 }
