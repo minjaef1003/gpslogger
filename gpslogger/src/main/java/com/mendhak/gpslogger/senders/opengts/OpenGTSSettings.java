@@ -1,8 +1,9 @@
 package com.mendhak.gpslogger.senders.opengts;
 
 import com.mendhak.gpslogger.common.Strings;
+import com.mendhak.gpslogger.senders.SenderSettings;
 
-public class OpenGTSSettings {
+public class OpenGTSSettings extends SenderSettings {
     private String server;
     private int port;
     private String serverPath;

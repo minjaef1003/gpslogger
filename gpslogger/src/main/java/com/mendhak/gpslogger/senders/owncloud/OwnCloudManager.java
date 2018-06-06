@@ -25,7 +25,7 @@ import com.mendhak.gpslogger.common.events.UploadEvents;
 import com.mendhak.gpslogger.common.slf4j.Logs;
 import com.mendhak.gpslogger.loggers.Files;
 import com.mendhak.gpslogger.senders.FileSender;
-import com.mendhak.gpslogger.senders.SettingsFactory;
+import com.mendhak.gpslogger.senders.SenderSettingsFactory;
 import com.mendhak.gpslogger.ui.fragments.settings.OwnCloudSettingsFragment;
 import com.path.android.jobqueue.CancelResult;
 import com.path.android.jobqueue.JobManager;
@@ -33,9 +33,7 @@ import com.path.android.jobqueue.TagConstraint;
 import de.greenrobot.event.EventBus;
 import org.slf4j.Logger;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.util.List;
 
 public class OwnCloudManager extends FileSender
@@ -50,7 +48,8 @@ public class OwnCloudManager extends FileSender
     @Override
     public void uploadFile(List<File> files)
     {
-        OwnCloudSettings settings = SettingsFactory.getOwnCloudSettings(preferenceHelper);
+        OwnCloudSettings settings = OwnCloudSettingsFactory.getOwnCloudSettings(preferenceHelper);
+
         for (File f : files) {
             uploadFile(f, settings);
         }
@@ -75,14 +74,13 @@ public class OwnCloudManager extends FileSender
             EventBus.getDefault().post(new UploadEvents.Ftp().failed());
             LOG.error("Error while testing ownCloud upload: " + ex.getMessage());
         }
-
         LOG.debug("Added background ownCloud upload job");
     }
 
     @Override
     public boolean isAvailable() {
-        OwnCloudSettings ownCloudSettings = SettingsFactory.getOwnCloudSettings(preferenceHelper);
-        return ownCloudSettings.validSettings();
+        SenderSettingsFactory factory = new OwnCloudSettingsFactory();
+        return factory.getSettings(preferenceHelper).validSettings();
     }
 
     @Override

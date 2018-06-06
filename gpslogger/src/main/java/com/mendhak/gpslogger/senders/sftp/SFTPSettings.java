@@ -1,8 +1,9 @@
 package com.mendhak.gpslogger.senders.sftp;
 
 import com.mendhak.gpslogger.common.Strings;
+import com.mendhak.gpslogger.senders.SenderSettings;
 
-public class SFTPSettings {
+public class SFTPSettings extends SenderSettings{
     private String RemoteServerPath;
     private String Host;
     private int Port;

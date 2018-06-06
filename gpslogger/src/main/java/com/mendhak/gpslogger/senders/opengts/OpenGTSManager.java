@@ -27,7 +27,7 @@ import com.mendhak.gpslogger.loggers.customurl.CustomUrlRequest;
 import com.mendhak.gpslogger.loggers.opengts.OpenGtsUdpJob;
 import com.mendhak.gpslogger.senders.FileSender;
 import com.mendhak.gpslogger.senders.GpxReader;
-import com.mendhak.gpslogger.senders.SettingsFactory;
+import com.mendhak.gpslogger.senders.SenderSettingsFactory;
 import com.path.android.jobqueue.JobManager;
 import org.slf4j.Logger;
 
@@ -62,8 +62,7 @@ public class OpenGTSManager extends FileSender {
 
     public void sendLocations(SerializableLocation[] locations){
         if (locations.length > 0) {
-
-            OpenGTSSettings openGTSSettings = SettingsFactory.getOpenGTSSettings(preferenceHelper);
+            OpenGTSSettings openGTSSettings = OpenGTSSettingsFactory.getOpenGTSSettings(preferenceHelper);
 
             if(openGTSSettings.getCommunicationMethod().equalsIgnoreCase("udp")){
                 JobManager jobManager = AppSettings.getJobManager();
@@ -209,8 +208,8 @@ public class OpenGTSManager extends FileSender {
 
     @Override
     public boolean isAvailable() {
-        OpenGTSSettings settings = SettingsFactory.getOpenGTSSettings(preferenceHelper);
-        return settings.validSettings();
+        SenderSettingsFactory factory = new OpenGTSSettingsFactory();
+        return factory.getSettings(preferenceHelper).validSettings();
     }
 
     @Override
