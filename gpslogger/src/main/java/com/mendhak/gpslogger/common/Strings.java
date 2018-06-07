@@ -111,7 +111,8 @@ public class Strings {
      * @param bearingDegrees
      * @return
      */
-    public static String getBearingDescription(float bearingDegrees,Context context) {
+    public static String getBearingDescription(float bearingDegrees,
+                                               Context context) {
         String[] bearingDescriptionList = {
                 context.getString(R.string.direction_northnortheast),
                 context.getString(R.string.direction_northnortheast) ,
