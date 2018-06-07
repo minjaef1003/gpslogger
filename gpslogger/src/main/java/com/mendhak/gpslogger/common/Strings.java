@@ -286,10 +286,24 @@ public class Strings {
             return defaultVal;
         }
     }
+    /*
+    Added 6/ 7/ 2018
+    Singleton Pattern
+    String(getSpeedDisplay, getDistanceDisplay)
+    Duplicate use of constructors causes a waste of memory
+    */
 
+    public static DecimalFormat DF_POINT_THREE;
+    public static DecimalFormat ifDecimalFormatIsFree(){
+        if(DF_POINT_THREE == null){
+            DF_POINT_THREE = new DecimalFormat("#.###");
+        }
+        return DF_POINT_THREE;
+    }
     public static String getSpeedDisplay(Context context, double metersPerSecond, boolean imperial){
 
-        DecimalFormat df = new DecimalFormat("#.###");
+        //DecimalFormat df = new DecimalFormat("#.###");
+        DecimalFormat df = ifDecimalFormatIsFree();
         String result = df.format(metersPerSecond) + context.getString(R.string.meters_per_second);
 
         if(imperial){
@@ -304,7 +318,7 @@ public class Strings {
     }
 
     public static String getDistanceDisplay(Context context, double meters, boolean imperial, boolean autoscale) {
-        DecimalFormat df = new DecimalFormat("#.###");
+        DecimalFormat df = ifDecimalFormatIsFree();
         String result = df.format(meters) + context.getString(R.string.meters);
 
         if(imperial){
