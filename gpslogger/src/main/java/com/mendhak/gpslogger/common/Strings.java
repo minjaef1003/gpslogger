@@ -112,40 +112,40 @@ public class Strings {
      * @return
      */
     public static String getBearingDescription(float bearingDegrees,Context context) {
-        List bearingDescriptionList = new ArrayList();
-        bearingDescriptionList.add(context.getString(R.string.direction_north));
-        bearingDescriptionList.add(context.getString(R.string.direction_northnortheast));
-        bearingDescriptionList.add(context.getString(R.string.direction_northeast));
-        bearingDescriptionList.add(context.getString(R.string.direction_eastnortheast));
-        bearingDescriptionList.add(context.getString(R.string.direction_east));
-        bearingDescriptionList.add(context.getString(R.string.direction_eastsoutheast));
-        bearingDescriptionList.add(context.getString(R.string.direction_southeast));
-        bearingDescriptionList.add(context.getString(R.string.direction_southsoutheast));
-        bearingDescriptionList.add(context.getString(R.string.direction_south));
-        bearingDescriptionList.add(context.getString(R.string.direction_southsouthwest));
-        bearingDescriptionList.add(context.getString(R.string.direction_southwest));
-        bearingDescriptionList.add(context.getString(R.string.direction_westsouthwest));
-        bearingDescriptionList.add(context.getString(R.string.direction_west));
-        bearingDescriptionList.add(context.getString(R.string.direction_westnorthwest));
-        bearingDescriptionList.add(context.getString(R.string.direction_northwest));
-        bearingDescriptionList.add(context.getString(R.string.direction_northnorthwest));
-        bearingDescriptionList.add(context.getString(R.string.unknown_direction));
+        String[] bearingDescriptionList = {
+                context.getString(R.string.direction_northnortheast),
+                context.getString(R.string.direction_northnortheast) ,
+                 context.getString(R.string.direction_northeast) ,
+                 context.getString(R.string.direction_eastnortheast) ,
+                 context.getString(R.string.direction_east) ,
+                 context.getString(R.string.direction_eastsoutheast) ,
+                 context.getString(R.string.direction_southeast) ,
+                 context.getString(R.string.direction_southsoutheast) ,
+                 context.getString(R.string.direction_south) ,
+                 context.getString(R.string.direction_southsouthwest) ,
+                 context.getString(R.string.direction_southwest) ,
+                 context.getString(R.string.direction_westsouthwest) ,
+                 context.getString(R.string.direction_west) ,
+                 context.getString(R.string.direction_westnorthwest) ,
+                 context.getString(R.string.direction_northwest) ,
+                 context.getString(R.string.direction_northnorthwest) ,
+                 context.getString(R.string.unknown_direction)
+        };
         String direction;
         String cardinal;
-
-        double caseOfBearingDegrees = Math.ceil(bearingDegrees/22.5) + 0.5;
-        if(caseOfBearingDegrees > 16 && caseOfBearingDegrees <= 16.5){
+        double caseOfBearingDegrees = Math.ceil(bearingDegrees / 22.5) + 0.5;
+        if (caseOfBearingDegrees > 16 && caseOfBearingDegrees <= 16.5) {
             caseOfBearingDegrees = 0;
         }
         caseOfBearingDegrees = Math.floor(caseOfBearingDegrees);
-        int caseOfBearingDegreesInteger = (int)caseOfBearingDegrees;
-        cardinal = bearingDescriptionList.get(caseOfBearingDegreesInteger).toString();
+        int caseOfBearingDegreesInteger = (int) caseOfBearingDegrees;
+        cardinal = bearingDescriptionList[caseOfBearingDegreesInteger];
 
-        direction = context.getString(R.string.direction_roughly, cardinal);
+        direction = context.getString(R.string.direction_roughly,cardinal);
+
         return direction;
 
     }
-
     /**
      * Makes string safe for writing to XML file. Removes lt and gt. Best used
      * when writing to file.
