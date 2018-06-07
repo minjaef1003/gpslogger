@@ -300,7 +300,7 @@ public class GpsDetailedViewFragment extends GenericViewFragment {
 
     @EventBusHook
     public void onEventMainThread(ServiceEvents.LoggingStatus loggingStatus){
-        if(loggingStatus.loggingStarted){
+        if(loggingStatus.service){
             setActionButtonStop();
             showPreferencesAndMessages();
             clearDisplay();

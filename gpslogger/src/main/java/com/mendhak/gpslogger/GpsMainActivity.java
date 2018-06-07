@@ -1346,12 +1346,12 @@ public class GpsMainActivity extends AppCompatActivity
 
     @EventBusHook
     public void onEventMainThread(ServiceEvents.WaitingForLocation waitingForLocation){
-        onWaitingForLocation(waitingForLocation.waiting);
+        onWaitingForLocation(waitingForLocation.service);
     }
 
     @EventBusHook
     public void onEventMainThread(ServiceEvents.AnnotationStatus annotationStatus){
-        if(annotationStatus.annotationWritten){
+        if(annotationStatus.service){
             setAnnotationDone();
         }
         else {

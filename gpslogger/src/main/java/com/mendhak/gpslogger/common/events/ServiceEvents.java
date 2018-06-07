@@ -24,7 +24,20 @@ import com.google.android.gms.location.ActivityRecognitionResult;
 
 public class ServiceEvents {
 
+    /*
+     Added 6/ 7/ 2018
+     Strategy pattern
+     Service Events
+     Properties are similar and can be edited individually
+     when new strategies are applied, without having to modify existing code
+     */
+    public static abstract class Services{
+        public boolean service;
+        public Services(boolean service){
+                this.service = service;
+            }
 
+    }
     /**
      * New location
      */
@@ -48,10 +61,9 @@ public class ServiceEvents {
     /**
      * Whether the logging service is still waiting for a location fix
      */
-    public static class WaitingForLocation {
-        public boolean waiting;
+    public static class WaitingForLocation extends Services {
         public WaitingForLocation(boolean waiting) {
-            this.waiting = waiting;
+            super(waiting);
         }
     }
 
@@ -64,20 +76,18 @@ public class ServiceEvents {
     /**
      * Status of the user's annotation, whether it has been written or is pending
      */
-    public static class AnnotationStatus {
-        public boolean annotationWritten;
+    public static class AnnotationStatus extends Services{
         public AnnotationStatus(boolean written){
-            this.annotationWritten = written;
+            super(written);
         }
     }
 
     /**
      * Whether GPS logging has started; raised after the start/stop button is pressed
      */
-    public static class LoggingStatus {
-        public boolean loggingStarted;
+    public static class LoggingStatus extends Services{
         public LoggingStatus(boolean loggingStarted) {
-            this.loggingStarted = loggingStarted;
+            super(loggingStarted);
         }
     }
 
