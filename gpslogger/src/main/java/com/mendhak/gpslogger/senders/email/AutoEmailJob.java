@@ -45,16 +45,16 @@ import java.util.UUID;
 public class AutoEmailJob extends Job {
 
     private static final Logger LOG = Logs.of(AutoEmailJob.class);
-    String smtpServer;
-    String smtpPort;
-    String smtpUsername;
-    String smtpPassword;
-    boolean smtpUseSsl;
-    String csvEmailTargets;
-    String fromAddress;
-    String subject;
-    String body;
-    File[] files;
+    private String smtpServer;
+    private String smtpPort;
+    private String smtpUsername;
+    private String smtpPassword;
+    private boolean smtpUseSsl;
+    private String csvEmailTargets;
+    private String fromAddress;
+    private String subject;
+    private String body;
+    private File[] files;
     static ArrayList<String> smtpServerResponses;
     static UploadEvents.AutoEmail smtpFailureEvent;
 
@@ -65,19 +65,23 @@ public class AutoEmailJob extends Job {
                            boolean smtpUseSsl, String csvEmailTargets, String fromAddress,
                             String subject, String body, File[] files) {
         super(new Params(1).requireNetwork().persist().addTags(getJobTag(files)));
-        this.smtpServer = smtpServer;
-        this.smtpPort = smtpPort;
-        this.smtpPassword = smtpPassword;
-        this.smtpUsername = smtpUsername;
-        this.smtpUseSsl = smtpUseSsl;
-        this.csvEmailTargets = csvEmailTargets;
-        this.fromAddress = fromAddress;
-        this.subject = subject;
-        this.body = body;
-        this.files = files;
+        this.setSmtpServer(smtpServer);
+        this.setSmtpPort(smtpPort);
+        this.setSmtpPassword(smtpPassword);
+        this.setSmtpUsername(smtpUsername);
+        this.setSmtpUseSsl(smtpUseSsl);
+        this.setCsvEmailTargets(csvEmailTargets);
+        this.setFromAddress(fromAddress);
+        this.setSubject(subject);
+        this.setBody(body);
+        this.setFiles(files);
 
         smtpServerResponses = new ArrayList<>();
         smtpFailureEvent = null;
+    }
+
+    private static Logger getLOG() {
+        return LOG;
     }
 
     @Override
@@ -85,13 +89,42 @@ public class AutoEmailJob extends Job {
 
     }
 
+    private void appendHeaderWhenEmailMultipleTargets(String target, SimpleSMTPHeader header) throws Throwable
+    {
+        for (String ccTarget : getCsvEmailTargets().split(",")) {
+            if (!ccTarget.equalsIgnoreCase(target)) {
+                header.addCC(ccTarget);
+            }
+        }
+    }
+    private void emailWithBody(Writer writer, SimpleSMTPHeader header) throws Throwable
+    {
+        header.addHeaderField("Content-Type", "text/plain; charset=UTF-8");
+        writer.write(header.toString());
+        writer.write(getBody());
+    }
+    private void emailWithFiles(Writer writer, SimpleSMTPHeader header) throws Throwable
+    {
+        String boundary = UUID.randomUUID().toString().replaceAll("-", "").substring(0, 9);
+        header.addHeaderField("Content-Type", "multipart/mixed; boundary=" + boundary);
+        writer.write(header.toString());
+
+        writer.write("--" + boundary + "\n");
+        writer.write("Content-Type: text/plain; charset=UTF-8" + "\n\n");
+        writer.write(getBody());
+        writer.write("\n");
+
+        attachFilesToWriter(writer, boundary, getFiles());
+        writer.write("--" + boundary + "--\n\n");
+    }
+
     @Override
     public void onRun() throws Throwable {
 
-        int port = Strings.toInt(smtpPort,25);
+        int port = Strings.toInt(getSmtpPort(),25);
 
-        if (Strings.isNullOrEmpty(fromAddress)) {
-            fromAddress = smtpUsername;
+        if (Strings.isNullOrEmpty(getFromAddress())) {
+            setFromAddress(getSmtpUsername());
         }
 
         AuthenticatingSMTPClient client = new AuthenticatingSMTPClient();
@@ -101,46 +134,46 @@ public class AutoEmailJob extends Job {
             client.addProtocolCommandListener(new ProtocolCommandListener() {
                 @Override
                 public void protocolCommandSent(ProtocolCommandEvent event) {
-                    LOG.debug(event.getMessage());
+                    getLOG().debug(event.getMessage());
                     smtpServerResponses.add(event.getMessage());
                 }
 
                 @Override
                 public void protocolReplyReceived(ProtocolCommandEvent event) {
-                    LOG.debug(event.getMessage());
+                    getLOG().debug(event.getMessage());
                     smtpServerResponses.add(event.getMessage());
                 }
             });
 
-            if(smtpUseSsl){
+            if(isSmtpUseSsl()){
                 client = new AuthenticatingSMTPClient("TLS",true);
             }
 
 
             // optionally set a timeout to have a faster feedback on errors
-            client.setDefaultTimeout(10 * 1000);
+            client.setDefaultTimeout(10*1000);
             checkReply(client);
-            LOG.debug("Connecting to SMTP Server");
-            client.connect(smtpServer, port);
+            getLOG().debug("Connecting to SMTP Server");
+            client.connect(getSmtpServer(), port);
             checkReply(client);
             // you say ehlo  and you specify the host you are connecting from, could be anything
             client.ehlo("localhost");
             checkReply(client);
             // if your host accepts STARTTLS, we're good everything will be encrypted, otherwise we're done here
-            LOG.debug("Checking TLS...");
+            getLOG().debug("Checking TLS...");
 
             client.setTrustManager(new LocalX509TrustManager(Networks.getKnownServersStore(AppSettings.getInstance())));
-            if(!smtpUseSsl && client.execTLS()){
+            if(!isSmtpUseSsl() && client.execTLS()){
                 client.ehlo("localhost");
             }
 
-            client.auth(AuthenticatingSMTPClient.AUTH_METHOD.LOGIN, smtpUsername, smtpPassword);
+            client.auth(AuthenticatingSMTPClient.AUTH_METHOD.LOGIN, getSmtpUsername(), getSmtpPassword());
             checkReply(client);
 
-            client.setSender(fromAddress);
+            client.setSender(getFromAddress());
             checkReply(client);
 
-            String target = csvEmailTargets.split(",")[0];
+            String target = getCsvEmailTargets().split(",")[0];
             client.addRecipient(target);
 
             checkReply(client);
@@ -150,34 +183,22 @@ public class AutoEmailJob extends Job {
             if (writer != null) {
 
 
-                SimpleSMTPHeader header = new SimpleSMTPHeader(fromAddress, target, subject);
+                SimpleSMTPHeader header = new SimpleSMTPHeader(getFromAddress(), target, getSubject());
 
                 //Multiple email targets?
-                for (String ccTarget : csvEmailTargets.split(",")) {
-                    if (!ccTarget.equalsIgnoreCase(target)) {
-                        header.addCC(ccTarget);
-                    }
-                }
+                appendHeaderWhenEmailMultipleTargets(target, header); // extract method
+
+
 
                 // Regular email with just a body
-                if (files == null || files.length == 0) {
-                    header.addHeaderField("Content-Type", "text/plain; charset=UTF-8");
-                    writer.write(header.toString());
-                    writer.write(body);
+                if (getFiles() == null || getFiles().length == 0)
+                {
+                    emailWithBody(writer, header);// extract method
                 }
                 // Attach files in a multipart way
-                else {
-                    String boundary = UUID.randomUUID().toString().replaceAll("-", "").substring(0, 9);
-                    header.addHeaderField("Content-Type", "multipart/mixed; boundary=" + boundary);
-                    writer.write(header.toString());
-
-                    writer.write("--" + boundary + "\n");
-                    writer.write("Content-Type: text/plain; charset=UTF-8" + "\n\n");
-                    writer.write(body);
-                    writer.write("\n");
-
-                    attachFilesToWriter(writer, boundary, files);
-                    writer.write("--" + boundary + "--\n\n");
+                else
+                {
+                    emailWithFiles(writer, header);// extract method
                 }
 
 
@@ -195,7 +216,7 @@ public class AutoEmailJob extends Job {
 
         }
         catch (Exception e) {
-            LOG.error("Could not send email ", e);
+            getLOG().error("Could not send email ", e);
             smtpFailureEvent = new UploadEvents.AutoEmail().failed("Could not send email " + e.getMessage() , e);
         }
         finally {
@@ -216,6 +237,7 @@ public class AutoEmailJob extends Job {
         }
 
     }
+
 
 
     /**
@@ -250,12 +272,12 @@ public class AutoEmailJob extends Job {
 
     @Override
     protected void onCancel() {
-        LOG.debug("Email job cancelled");
+        getLOG().debug("Email job cancelled");
     }
 
     @Override
     protected boolean shouldReRunOnThrowable(Throwable throwable) {
-        LOG.error("Could not send email", throwable);
+        getLOG().error("Could not send email", throwable);
         return false;
     }
 
@@ -266,5 +288,85 @@ public class AutoEmailJob extends Job {
         }
         return "EMAIL" + sb.toString();
 
+    }
+
+    private String getSmtpServer() {
+        return smtpServer;
+    }
+
+    private void setSmtpServer(String smtpServer) {
+        this.smtpServer = smtpServer;
+    }
+
+    private String getSmtpPort() {
+        return smtpPort;
+    }
+
+    private void setSmtpPort(String smtpPort) {
+        this.smtpPort = smtpPort;
+    }
+
+    private String getSmtpUsername() {
+        return smtpUsername;
+    }
+
+    private void setSmtpUsername(String smtpUsername) {
+        this.smtpUsername = smtpUsername;
+    }
+
+    private String getSmtpPassword() {
+        return smtpPassword;
+    }
+
+    private void setSmtpPassword(String smtpPassword) {
+        this.smtpPassword = smtpPassword;
+    }
+
+    private boolean isSmtpUseSsl() {
+        return smtpUseSsl;
+    }
+
+    private void setSmtpUseSsl(boolean smtpUseSsl) {
+        this.smtpUseSsl = smtpUseSsl;
+    }
+
+    private String getCsvEmailTargets() {
+        return csvEmailTargets;
+    }
+
+    private void setCsvEmailTargets(String csvEmailTargets) {
+        this.csvEmailTargets = csvEmailTargets;
+    }
+
+    private String getFromAddress() {
+        return fromAddress;
+    }
+
+    private void setFromAddress(String fromAddress) {
+        this.fromAddress = fromAddress;
+    }
+
+    private String getSubject() {
+        return subject;
+    }
+
+    private void setSubject(String subject) {
+        this.subject = subject;
+    }
+
+    private String getBody() {
+        return body;
+    }
+
+    private void setBody(String body) {
+        this.body = body;
+    }
+
+    private File[] getFiles() {
+        return files;
+    }
+
+    private void setFiles(File[] files) {
+        this.files = files;
     }
 }

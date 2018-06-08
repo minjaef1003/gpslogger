@@ -17,16 +17,24 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class OwnCloudJobTest {
     @Test
     public void shouldReRunOnThrowable_Test(){
-        OwnCloudJob job = new OwnCloudJob("server", "user",
-                "pw", "directory",
+        OwnCloudSettings ownCloudSettings = new OwnCloudSettings();
+        ownCloudSettings.setServername("server");
+        ownCloudSettings.setUsername("user");
+        ownCloudSettings.setPassword("password");
+        ownCloudSettings.setDirectory("directory");
+        OwnCloudJob job = new OwnCloudJob(ownCloudSettings,
                 new File("abc"), "filename");
         assertThat(job.shouldReRunOnThrowable(new Throwable()), is(false));
     }
 
     @Test
     public void getJobTag_Test(){
-        OwnCloudJob job = new OwnCloudJob("server", "user",
-                "pw", "directory",
+        OwnCloudSettings ownCloudSettings = new OwnCloudSettings();
+        ownCloudSettings.setServername("server");
+        ownCloudSettings.setUsername("user");
+        ownCloudSettings.setPassword("password");
+        ownCloudSettings.setDirectory("directory");
+        OwnCloudJob job = new OwnCloudJob(ownCloudSettings,
                 new File("abc"), "filename");
         assertThat(job.getJobTag(new File("file")), is("OWNCLOUDfile"));
     }

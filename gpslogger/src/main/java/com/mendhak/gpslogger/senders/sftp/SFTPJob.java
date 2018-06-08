@@ -16,28 +16,13 @@ import java.util.Properties;
 public class SFTPJob extends Job {
     private static final Logger LOG = Logs.of(SFTPJob.class);
     private final File localFile;
-    private final String host;
-    private final int port;
-    private final String pathToPrivateKey;
-    private final String privateKeyPassphrase;
-    private final String username;
-    private final String password;
-    private final String hostKey;
-    private final String remoteDir;
+    private final SFTPSettings settings;
 
-    public SFTPJob(File localFile, String remoteDir, String host, int port, String pathToPrivateKey, String privateKeyPassphrase, String username, String password, String hostKey) {
+    public SFTPJob(File localFile, SFTPSettings settings){
         super(new Params(1).requireNetwork().persist().addTags(getJobTag(localFile)));
         this.localFile = localFile;
-        this.remoteDir = remoteDir;
-        this.host = host;
-        this.port = port;
-        this.pathToPrivateKey = pathToPrivateKey;
-        this.privateKeyPassphrase = privateKeyPassphrase;
-        this.username = username;
-        this.password = password;
-        this.hostKey = hostKey;
+        this.settings = settings;
     }
-
 
     @Override
     public void onAdded() {
@@ -52,19 +37,19 @@ public class SFTPJob extends Job {
         FileInputStream fis = null;
 
         try {
-            String keystring = this.hostKey;
+            String keystring = this.settings.getKnownHostKey();
 
             if (!Strings.isNullOrEmpty(keystring)) {
                 byte[] key = Base64.decode(keystring, Base64.DEFAULT);
-                jsch.getHostKeyRepository().add(new HostKey(host, key), null);
+                jsch.getHostKeyRepository().add(new HostKey(settings.getHost(), key), null);
             }
 
-            if(!Strings.isNullOrEmpty(this.pathToPrivateKey)){
-                jsch.addIdentity(this.pathToPrivateKey, this.privateKeyPassphrase);
+            if(!Strings.isNullOrEmpty(this.settings.getPrivateKeyFilePath())){
+                jsch.addIdentity(this.settings.getPrivateKeyFilePath(), this.settings.getPrivateKeyPassphrase());
             }
 
-            session = jsch.getSession(this.username, this.host, this.port);
-            session.setPassword(this.password);
+            session = jsch.getSession(this.settings.getUser(), this.settings.getHost(), this.settings.getPort());
+            session.setPassword(this.settings.getPassword());
 
             Properties prop = new Properties();
             prop.put("StrictHostKeyChecking", "yes");
@@ -79,8 +64,8 @@ public class SFTPJob extends Job {
                 Channel channel = session.openChannel("sftp");
                 channel.connect();
                 ChannelSftp channelSftp = (ChannelSftp) channel;
-                LOG.debug("Changing directory to " + this.remoteDir);
-                channelSftp.cd(this.remoteDir);
+                LOG.debug("Changing directory to " + this.settings.getRemoteServerPath());
+                channelSftp.cd(this.settings.getRemoteServerPath());
                 LOG.debug("Uploading " + this.localFile.getName() + " to remote server");
                 channelSftp.put(new FileInputStream(this.localFile), this.localFile.getName(), ChannelSftp.OVERWRITE);
 
@@ -118,7 +103,6 @@ public class SFTPJob extends Job {
             }
         }
     }
-
 
     @Override
     protected void onCancel() {

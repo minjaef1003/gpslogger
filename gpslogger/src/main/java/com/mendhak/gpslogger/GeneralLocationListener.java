@@ -56,21 +56,7 @@ class GeneralLocationListener implements LocationListener, GpsStatus.Listener, G
 
         try {
             if (loc != null) {
-                Bundle b = new Bundle();
-                b.putString(BundleConstants.HDOP, this.latestHdop);
-                b.putString(BundleConstants.PDOP, this.latestPdop);
-                b.putString(BundleConstants.VDOP, this.latestVdop);
-                b.putString(BundleConstants.GEOIDHEIGHT, this.geoIdHeight);
-                b.putString(BundleConstants.AGEOFDGPSDATA, this.ageOfDgpsData);
-                b.putString(BundleConstants.DGPSID, this.dgpsId);
-
-                b.putBoolean(BundleConstants.PASSIVE, listenerName.equalsIgnoreCase(BundleConstants.PASSIVE));
-                b.putString(BundleConstants.LISTENER, listenerName);
-                b.putInt(BundleConstants.SATELLITES_FIX, satellitesUsedInFix);
-                b.putString(BundleConstants.DETECTED_ACTIVITY, session.getLatestDetectedActivityName());
-
-                loc.setExtras(b);
-                loggingService.onLocationChanged(loc);
+                locationChange(loc);
 
                 this.latestHdop = "";
                 this.latestPdop = "";
@@ -83,6 +69,8 @@ class GeneralLocationListener implements LocationListener, GpsStatus.Listener, G
         }
 
     }
+
+
 
     public void onProviderDisabled(String provider) {
         LOG.info("Provider disabled: " + provider);
@@ -119,24 +107,7 @@ class GeneralLocationListener implements LocationListener, GpsStatus.Listener, G
 
             case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
 
-                GpsStatus status = loggingService.gpsLocationManager.getGpsStatus(null);
-
-                int maxSatellites = status.getMaxSatellites();
-
-                Iterator<GpsSatellite> it = status.getSatellites().iterator();
-                int satellitesVisible = 0;
-                satellitesUsedInFix=0;
-
-                while (it.hasNext() && satellitesVisible <= maxSatellites) {
-                    GpsSatellite sat = it.next();
-                    if(sat.usedInFix()){
-                        satellitesUsedInFix++;
-                    }
-                    satellitesVisible++;
-                }
-
-                LOG.debug(String.valueOf(satellitesVisible) + " satellites");
-                loggingService.setSatelliteInfo(satellitesVisible);
+                setSatelliteInfo();
                 break;
 
             case GpsStatus.GPS_EVENT_STARTED:
@@ -148,6 +119,27 @@ class GeneralLocationListener implements LocationListener, GpsStatus.Listener, G
                 break;
 
         }
+    }
+
+    private void setSatelliteInfo() {
+        GpsStatus status = loggingService.gpsLocationManager.getGpsStatus(null);
+
+        int maxSatellites = status.getMaxSatellites();
+
+        Iterator<GpsSatellite> it = status.getSatellites().iterator();
+        int satellitesVisible = 0;
+        satellitesUsedInFix=0;
+
+        while (it.hasNext() && satellitesVisible <= maxSatellites) {
+            GpsSatellite sat = it.next();
+            if(sat.usedInFix()){
+                satellitesUsedInFix++;
+            }
+            satellitesVisible++;
+        }
+
+        LOG.debug(String.valueOf(satellitesVisible) + " satellites");
+        loggingService.setSatelliteInfo(satellitesVisible);
     }
 
     @Override
@@ -187,5 +179,22 @@ class GeneralLocationListener implements LocationListener, GpsStatus.Listener, G
 
         }
 
+    }
+    private void locationChange(Location loc) {
+        Bundle b = new Bundle();
+        b.putString(BundleConstants.HDOP, this.latestHdop);
+        b.putString(BundleConstants.PDOP, this.latestPdop);
+        b.putString(BundleConstants.VDOP, this.latestVdop);
+        b.putString(BundleConstants.GEOIDHEIGHT, this.geoIdHeight);
+        b.putString(BundleConstants.AGEOFDGPSDATA, this.ageOfDgpsData);
+        b.putString(BundleConstants.DGPSID, this.dgpsId);
+
+        b.putBoolean(BundleConstants.PASSIVE, listenerName.equalsIgnoreCase(BundleConstants.PASSIVE));
+        b.putString(BundleConstants.LISTENER, listenerName);
+        b.putInt(BundleConstants.SATELLITES_FIX, satellitesUsedInFix);
+        b.putString(BundleConstants.DETECTED_ACTIVITY, session.getLatestDetectedActivityName());
+
+        loc.setExtras(b);
+        loggingService.onLocationChanged(loc);
     }
 }

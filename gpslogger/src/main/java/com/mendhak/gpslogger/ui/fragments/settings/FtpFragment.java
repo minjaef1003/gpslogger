@@ -96,10 +96,9 @@ public class FtpFragment
             CustomSwitchPreference implicitPreference = (CustomSwitchPreference) findPreference("autoftp_implicit");
             MaterialEditTextPreference directoryPreference = (MaterialEditTextPreference) findPreference("autoftp_directory");
 
-            if (!helper.validSettings(servernamePreference.getText(), usernamePreference.getText(), passwordPreference.getText(),
+            if (!helper.validSettings(servernamePreference.getText(),
                     Strings.toInt(portPreference.getText(), 21),
-                    useFtpsPreference.isChecked(), sslTlsPreference.getValue(),
-                    implicitPreference.isChecked())) {
+                    useFtpsPreference.isChecked(), sslTlsPreference.getValue())) {
                 Dialogs.alert(getString(R.string.autoftp_invalid_settings),
                         getString(R.string.autoftp_invalid_summary),
                         getActivity());

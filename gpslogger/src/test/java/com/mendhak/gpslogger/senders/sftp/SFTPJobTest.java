@@ -15,17 +15,33 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class SFTPJobTest {
     @Test
     public void shouldReRunOnThrowable_Test(){
-        SFTPJob job = new SFTPJob(new File("file"), "remoteDir","host"
-                , 1, "path", "phrase"
-                , "user", "pw", "key");
+        SFTPSettings settings = new SFTPSettings();
+        settings.setRemoteServerPath("remoteDir");
+        settings.setHost("host");
+        settings.setPort(1);
+        settings.setPrivateKeyFilePath("path");
+        settings.setPrivateKeyPassphrase("phrase");
+        settings.setUser("user");
+        settings.setPassword("password");
+        settings.setKnownHostKey("knownHostKey");
+        SFTPJob job = new SFTPJob(new File("file"), settings);
+
         assertThat(job.shouldReRunOnThrowable(new Throwable()), is(false));
     }
 
     @Test
     public void getJobTag_Test(){
-        SFTPJob job = new SFTPJob(new File("file"), "remoteDir","host"
-                , 1, "path", "phrase"
-                , "user", "pw", "key");
+        SFTPSettings settings = new SFTPSettings();
+        settings.setRemoteServerPath("remoteDir");
+        settings.setHost("host");
+        settings.setPort(1);
+        settings.setPrivateKeyFilePath("path");
+        settings.setPrivateKeyPassphrase("phrase");
+        settings.setUser("user");
+        settings.setPassword("password");
+        settings.setKnownHostKey("knownHostKey");
+        SFTPJob job = new SFTPJob(new File("file"), settings);
+
         assertThat(job.getJobTag(new File("name")), is("SFTPname"));
     }
 }

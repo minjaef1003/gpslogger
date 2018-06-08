@@ -34,6 +34,7 @@ import com.mendhak.gpslogger.common.network.ServerType;
 import com.mendhak.gpslogger.common.slf4j.Logs;
 import com.mendhak.gpslogger.senders.PreferenceValidator;
 import com.mendhak.gpslogger.senders.owncloud.OwnCloudManager;
+import com.mendhak.gpslogger.senders.owncloud.OwnCloudSettings;
 import com.mendhak.gpslogger.ui.Dialogs;
 import com.mendhak.gpslogger.ui.components.CustomSwitchPreference;
 import com.mendhak.gpslogger.ui.fragments.PermissionedPreferenceFragment;
@@ -108,11 +109,13 @@ public class OwnCloudSettingsFragment
             MaterialEditTextPreference passwordPreference = (MaterialEditTextPreference) findPreference("owncloud_password");
             MaterialEditTextPreference directoryPreference = (MaterialEditTextPreference) findPreference("owncloud_directory");
 
-            if (!OwnCloudManager.validSettings(
-                    servernamePreference.getText(),
-                    usernamePreference.getText(),
-                    passwordPreference.getText(),
-                    directoryPreference.getText())) {
+            OwnCloudSettings ownCloudSettings = new OwnCloudSettings();
+            ownCloudSettings.setServername(servernamePreference.getText());
+            ownCloudSettings.setUsername(usernamePreference.getText());
+            ownCloudSettings.setPassword(passwordPreference.getText());
+            ownCloudSettings.setDirectory(directoryPreference.getText());
+
+            if (ownCloudSettings.validSettings()) {
                 Dialogs.alert(getString(R.string.autoftp_invalid_settings),
                         getString(R.string.autoftp_invalid_summary),
                         getActivity());
@@ -121,8 +124,7 @@ public class OwnCloudSettingsFragment
 
             Dialogs.progress(getActivity(), getString(R.string.owncloud_testing), getString(R.string.please_wait));
             OwnCloudManager helper = new OwnCloudManager(PreferenceHelper.getInstance());
-            helper.testOwnCloud(servernamePreference.getText(), usernamePreference.getText(), passwordPreference.getText(),
-                    directoryPreference.getText());
+            helper.testOwnCloud(ownCloudSettings);
         }
 
 
