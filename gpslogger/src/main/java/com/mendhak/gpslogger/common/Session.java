@@ -165,14 +165,44 @@ public class Session {
         }
     }
 
-    public double getPreviousLatitude() {
-        Location loc = getPreviousLocationInfo();
-        return loc != null ? loc.getLatitude() : 0;
+    /**
+     * Added 06/ 08/ 18
+     * Template Method Pattern
+     * In Session Class
+     * Using this pattern to minimaze redundant parts of the code
+     * that have duplicated parts
+     */
+    abstract class getPreviousLoc{
+        Location loc;
+        void getPrevLocInfo(){
+            loc = getPreviousLocationInfo();
+        }
+        abstract double returnPrevLoc();
+    }
+    class getPreviousLat extends getPreviousLoc{
+
+        @Override
+        double returnPrevLoc() {
+            return loc != null ? loc.getLatitude() : 0;
+        }
+    }
+    class getPreviousLon extends getPreviousLoc{
+
+        @Override
+        double returnPrevLoc() {
+            return loc != null ? loc.getLongitude() : 0;
+        }
+    }
+    public double getPreviousLatitude(){
+        getPreviousLat getPrevLat = new getPreviousLat();
+        getPrevLat.getPrevLocInfo();
+        return getPrevLat.returnPrevLoc();
     }
 
     public double getPreviousLongitude() {
-        Location loc = getPreviousLocationInfo();
-        return loc != null ? loc.getLongitude() : 0;
+        getPreviousLon getPrevLon = new getPreviousLon();
+        getPrevLon.getPrevLocInfo();
+        return getPrevLon.returnPrevLoc();
     }
 
     public double getTotalTravelled() {
