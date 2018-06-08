@@ -504,25 +504,25 @@ public class GpsMainActivity extends AppCompatActivity
 
 
 
-        materialDrawer.addItem(GpsLoggerDrawerItem.newPrimary(R.string.pref_general_title, R.string.pref_general_summary, R.drawable.settings, 1000));
-        materialDrawer.addItem(GpsLoggerDrawerItem.newPrimary(R.string.pref_logging_title, R.string.pref_logging_summary, R.drawable.loggingsettings, 1001));
-        materialDrawer.addItem(GpsLoggerDrawerItem.newPrimary(R.string.pref_performance_title, R.string.pref_performance_summary, R.drawable.performance, 1002));
+        materialDrawer.addItem(GpsLoggerDrawerItem.getInstance().newPrimary(R.string.pref_general_title, R.string.pref_general_summary, R.drawable.settings, 1000));
+        materialDrawer.addItem(GpsLoggerDrawerItem.getInstance().newPrimary(R.string.pref_logging_title, R.string.pref_logging_summary, R.drawable.loggingsettings, 1001));
+        materialDrawer.addItem(GpsLoggerDrawerItem.getInstance().newPrimary(R.string.pref_performance_title, R.string.pref_performance_summary, R.drawable.performance, 1002));
         materialDrawer.addItem(new DividerDrawerItem());
 
-        materialDrawer.addItem(GpsLoggerDrawerItem.newPrimary(R.string.pref_autosend_title, R.string.pref_autosend_summary, R.drawable.autosend, 1003));
-        materialDrawer.addItem(GpsLoggerDrawerItem.newSecondary(R.string.gdocs_setup_title, R.drawable.googledrive, 1004));
-        materialDrawer.addItem(GpsLoggerDrawerItem.newSecondary(R.string.dropbox_setup_title, R.drawable.dropbox, 1005));
-        materialDrawer.addItem(GpsLoggerDrawerItem.newSecondary(R.string.sftp_setup_title, R.drawable.sftp, 1015));
-        materialDrawer.addItem(GpsLoggerDrawerItem.newSecondary(R.string.opengts_setup_title, R.drawable.opengts, 1008));
-        materialDrawer.addItem(GpsLoggerDrawerItem.newSecondary(R.string.osm_setup_title, R.drawable.openstreetmap, 1009));
-        materialDrawer.addItem(GpsLoggerDrawerItem.newSecondary(R.string.autoemail_title, R.drawable.email, 1006));
-        materialDrawer.addItem(GpsLoggerDrawerItem.newSecondary(R.string.owncloud_setup_title, R.drawable.owncloud, 1010));
-        materialDrawer.addItem(GpsLoggerDrawerItem.newSecondary(R.string.autoftp_setup_title, R.drawable.ftp, 1007));
+        materialDrawer.addItem(GpsLoggerDrawerItem.getInstance().newPrimary(R.string.pref_autosend_title, R.string.pref_autosend_summary, R.drawable.autosend, 1003));
+        materialDrawer.addItem(GpsLoggerDrawerItem.getInstance().newSecondary(R.string.gdocs_setup_title, R.drawable.googledrive, 1004));
+        materialDrawer.addItem(GpsLoggerDrawerItem.getInstance().newSecondary(R.string.dropbox_setup_title, R.drawable.dropbox, 1005));
+        materialDrawer.addItem(GpsLoggerDrawerItem.getInstance().newSecondary(R.string.sftp_setup_title, R.drawable.sftp, 1015));
+        materialDrawer.addItem(GpsLoggerDrawerItem.getInstance().newSecondary(R.string.opengts_setup_title, R.drawable.opengts, 1008));
+        materialDrawer.addItem(GpsLoggerDrawerItem.getInstance().newSecondary(R.string.osm_setup_title, R.drawable.openstreetmap, 1009));
+        materialDrawer.addItem(GpsLoggerDrawerItem.getInstance().newSecondary(R.string.autoemail_title, R.drawable.email, 1006));
+        materialDrawer.addItem(GpsLoggerDrawerItem.getInstance().newSecondary(R.string.owncloud_setup_title, R.drawable.owncloud, 1010));
+        materialDrawer.addItem(GpsLoggerDrawerItem.getInstance().newSecondary(R.string.autoftp_setup_title, R.drawable.ftp, 1007));
 
         materialDrawer.addItem(new DividerDrawerItem());
 
-        materialDrawer.addStickyFooterItem(GpsLoggerDrawerItem.newSecondary(R.string.menu_faq, R.drawable.helpfaq, 9000));
-        materialDrawer.addStickyFooterItem(GpsLoggerDrawerItem.newSecondary(R.string.menu_exit, R.drawable.exit, 9001));
+        materialDrawer.addStickyFooterItem(GpsLoggerDrawerItem.getInstance().newSecondary(R.string.menu_faq, R.drawable.helpfaq, 9000));
+        materialDrawer.addStickyFooterItem(GpsLoggerDrawerItem.getInstance().newSecondary(R.string.menu_exit, R.drawable.exit, 9001));
 
 
         materialDrawer.setOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
