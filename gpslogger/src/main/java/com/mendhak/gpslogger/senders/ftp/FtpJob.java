@@ -49,16 +49,16 @@ public class FtpJob extends Job {
 
     private static final Logger LOG = Logs.of(FtpJob.class);
 
-    String server;
-    int port;
-    String username;
-    String password;
-    boolean useFtps;
-    String protocol;
-    boolean implicit;
-    File gpxFile;
-    String fileName;
-    String directory;
+    private String server; // Self Encapsulate Field
+    private int port;
+    private String username;
+    private String password;
+    private boolean useFtps;
+    private String protocol;
+    private boolean implicit;
+    private File gpxFile;
+    private String fileName;
+    private String directory;
 
     static UploadEvents.Ftp jobResult;
     static ArrayList<String> ftpServerResponses;
@@ -68,16 +68,16 @@ public class FtpJob extends Job {
                      File gpxFile, String fileName) {
         super(new Params(1).requireNetwork().persist().addTags(getJobTag(gpxFile)));
 
-        this.server = server;
-        this.port = port;
-        this.username = username;
-        this.password = password;
-        this.useFtps = useFtps;
-        this.protocol = protocol;
-        this.implicit = implicit;
-        this.gpxFile = gpxFile;
-        this.fileName = fileName;
-        this.directory = directory;
+        this.setServer(server);
+        this.setPort(port);
+        this.setUsername(username);
+        this.setPassword(password);
+        this.setUseFtps(useFtps);
+        this.setProtocol(protocol);
+        this.setImplicit(implicit);
+        this.setGpxFile(gpxFile);
+        this.setFileName(fileName);
+        this.setDirectory(directory);
 
         ftpServerResponses = new ArrayList<>();
         jobResult = null;
@@ -106,14 +106,14 @@ public class FtpJob extends Job {
 
         } catch (Exception e) {
             jobResult = new UploadEvents.Ftp().failed( "Could not create FTP Client" , e);
-            LOG.error("Could not create FTP Client", e);
+            getLOG().error("Could not create FTP Client", e);
             return false;
         }
 
 
         try {
 
-            client.addProtocolCommandListener(new PrintCommandListener(new PrintWriter(new LoggingOutputStream(LOG))));
+            client.addProtocolCommandListener(new PrintCommandListener(new PrintWriter(new LoggingOutputStream(getLOG()))));
             client.setDefaultTimeout(60000);
             client.setConnectTimeout(60000);
             client.connect(server, port);
@@ -135,13 +135,13 @@ public class FtpJob extends Job {
                 client.enterLocalPassiveMode();
                 logServerReply(client);
 
-                LOG.debug("Uploading file to FTP server " + server);
-                LOG.debug("Checking for FTP directory " + directory);
+                getLOG().debug("Uploading file to FTP server " + server);
+                getLOG().debug("Checking for FTP directory " + directory);
                 FTPFile[] existingDirectory = client.listFiles(directory);
                 logServerReply(client);
 
                 if (existingDirectory.length <= 0) {
-                    LOG.debug("Attempting to create FTP directory " + directory);
+                    getLOG().debug("Attempting to create FTP directory " + directory);
                     ftpCreateDirectoryTree(client, directory);
                     logServerReply(client);
                 }
@@ -153,24 +153,24 @@ public class FtpJob extends Job {
                 inputStream.close();
                 logServerReply(client);
                 if (result) {
-                    LOG.debug("Successfully FTPd file " + fileName);
+                    getLOG().debug("Successfully FTPd file " + fileName);
                 } else {
                     jobResult = new UploadEvents.Ftp().failed( "Failed to FTP file " + fileName , null);
-                    LOG.debug("Failed to FTP file " + fileName);
+                    getLOG().debug("Failed to FTP file " + fileName);
                     return false;
                 }
 
             } else {
                 logServerReply(client);
                 jobResult = new UploadEvents.Ftp().failed( "Could not log in to FTP server" , null);
-                LOG.debug("Could not log in to FTP server");
+                getLOG().debug("Could not log in to FTP server");
                 return false;
             }
 
         } catch (Exception e) {
             logServerReply(client);
             jobResult = new UploadEvents.Ftp().failed( "Could not connect or upload to FTP server.", e);
-            LOG.error("Could not connect or upload to FTP server.", e);
+            getLOG().error("Could not connect or upload to FTP server.", e);
             return false;
         } finally {
             try {
@@ -184,7 +184,7 @@ public class FtpJob extends Job {
                     jobResult = new UploadEvents.Ftp().failed( "Could not logout or disconnect", e);
                 }
 
-                LOG.error("Could not logout or disconnect", e);
+                getLOG().error("Could not logout or disconnect", e);
                 return false;
             }
         }
@@ -232,6 +232,10 @@ public class FtpJob extends Job {
         }
     }
 
+    private static Logger getLOG() {
+        return LOG;
+    }
+
     @Override
     public void onAdded() {
 
@@ -239,7 +243,7 @@ public class FtpJob extends Job {
 
     @Override
     public void onRun() throws Throwable {
-        if (upload(server, username, password, directory, port, useFtps, protocol, implicit, gpxFile, fileName)) {
+        if (upload(getServer(), getUsername(), getPassword(), getDirectory(), getPort(), isUseFtps(), getProtocol(), isImplicit(), getGpxFile(), getFileName())) {
             EventBus.getDefault().post(new UploadEvents.Ftp().succeeded());
         } else {
             jobResult.ftpMessages = ftpServerResponses;
@@ -255,11 +259,91 @@ public class FtpJob extends Job {
     @Override
     protected boolean shouldReRunOnThrowable(Throwable throwable) {
         EventBus.getDefault().post(new UploadEvents.Ftp().failed("Could not FTP file", throwable));
-        LOG.error("Could not FTP file", throwable);
+        getLOG().error("Could not FTP file", throwable);
         return false;
     }
 
     public static String getJobTag(File testFile) {
         return "FTP"+testFile.getName();
+    }
+
+    private String getServer() {
+        return server;
+    }
+
+    private void setServer(String server) {
+        this.server = server;
+    }
+
+    private int getPort() {
+        return port;
+    }
+
+    private void setPort(int port) {
+        this.port = port;
+    }
+
+    private String getUsername() {
+        return username;
+    }
+
+    private void setUsername(String username) {
+        this.username = username;
+    }
+
+    private String getPassword() {
+        return password;
+    }
+
+    private void setPassword(String password) {
+        this.password = password;
+    }
+
+    private boolean isUseFtps() {
+        return useFtps;
+    }
+
+    private void setUseFtps(boolean useFtps) {
+        this.useFtps = useFtps;
+    }
+
+    private String getProtocol() {
+        return protocol;
+    }
+
+    private void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
+
+    private boolean isImplicit() {
+        return implicit;
+    }
+
+    private void setImplicit(boolean implicit) {
+        this.implicit = implicit;
+    }
+
+    private File getGpxFile() {
+        return gpxFile;
+    }
+
+    private void setGpxFile(File gpxFile) {
+        this.gpxFile = gpxFile;
+    }
+
+    private String getFileName() {
+        return fileName;
+    }
+
+    private void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    private String getDirectory() {
+        return directory;
+    }
+
+    private void setDirectory(String directory) {
+        this.directory = directory;
     }
 }

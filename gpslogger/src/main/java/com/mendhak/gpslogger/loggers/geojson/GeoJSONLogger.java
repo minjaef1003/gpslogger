@@ -21,10 +21,10 @@ public class GeoJSONLogger implements FileLogger {
     protected final String name;
     private final boolean addNewTrackSegment;
 
-    public GeoJSONLogger(File file, boolean addNewTrackSegment) {
-        this.file = file;
+    public GeoJSONLogger(File setFile, boolean setAddNewTrackSegment) {
+        this.file = setFile;
         name = "GeoJSON";
-        this.addNewTrackSegment = addNewTrackSegment;
+        this.addNewTrackSegment = setAddNewTrackSegment;
     }
 
     @Override
@@ -34,7 +34,7 @@ public class GeoJSONLogger implements FileLogger {
 
     @Override
     public void annotate(String description, Location loc) throws Exception {
-        Runnable gw = new GeoJSONWriterPoints(file, loc, description, addNewTrackSegment);
+        Runnable gw = new GeoJSONWriterPoints(file, loc, description);
         EXECUTOR.execute(gw);
     }
 

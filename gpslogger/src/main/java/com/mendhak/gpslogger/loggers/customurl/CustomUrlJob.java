@@ -42,11 +42,11 @@ public class CustomUrlJob extends Job {
     private UploadEvents.BaseUploadEvent callbackEvent;
     private CustomUrlRequest urlRequest;
 
-    public CustomUrlJob(CustomUrlRequest urlRequest, UploadEvents.BaseUploadEvent callbackEvent) {
+    public CustomUrlJob(CustomUrlRequest setUrlRequest, UploadEvents.BaseUploadEvent setCallbackEvent) {
         super(new Params(1).requireNetwork().persist());
 
-        this.callbackEvent = callbackEvent;
-        this.urlRequest = urlRequest;
+        this.callbackEvent = setCallbackEvent;
+        this.urlRequest = setUrlRequest;
     }
 
     @Override

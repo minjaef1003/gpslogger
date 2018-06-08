@@ -39,19 +39,23 @@ import java.net.URLEncoder;
 
 public class GoogleDriveJob extends Job {
     private static final Logger LOG = Logs.of(GoogleDriveJob.class);
-    String token;
-    File gpxFile;
-    String googleDriveFolderName;
+    private String token;
+    private File gpxFile;
+    private String googleDriveFolderName;
 
     protected GoogleDriveJob(File gpxFile, String googleDriveFolderName) {
         super(new Params(1).requireNetwork().persist().addTags(getJobTag(gpxFile)));
-        this.gpxFile = gpxFile;
-        this.googleDriveFolderName = googleDriveFolderName;
+        this.setGpxFile(gpxFile);
+        this.setGoogleDriveFolderName(googleDriveFolderName);
 
     }
 
     public static String getJobTag(File gpxFile){
         return "GOOGLEDRIVE" + gpxFile.getName();
+    }
+
+    private static Logger getLOG() {
+        return LOG;
     }
 
     @Override
@@ -63,21 +67,21 @@ public class GoogleDriveJob extends Job {
     public void onRun() throws Throwable {
 
         GoogleDriveManager manager = new GoogleDriveManager(PreferenceHelper.getInstance());
-        token = manager.getToken();
+        setToken(manager.getToken());
 
-        FileInputStream fis = new FileInputStream(gpxFile);
-        String fileName = gpxFile.getName();
+        FileInputStream fis = new FileInputStream(getGpxFile());
+        String fileName = getGpxFile().getName();
 
         String gpsLoggerFolderId = PreferenceHelper.getInstance().getGoogleDriveFolderId();
-        LOG.debug("GPSLogger folder ID - " + gpsLoggerFolderId);
+        getLOG().debug("GPSLogger folder ID - " + gpsLoggerFolderId);
 
-        if(Strings.isNullOrEmpty(gpsLoggerFolderId) || !folderExists(token, gpsLoggerFolderId)){
-            LOG.debug("GPSLogger folder not found, searching by name");
-            gpsLoggerFolderId = getFileIdFromFileName(token, googleDriveFolderName, null);
+        if(Strings.isNullOrEmpty(gpsLoggerFolderId) || !folderExists(getToken(), gpsLoggerFolderId)){
+            getLOG().debug("GPSLogger folder not found, searching by name");
+            gpsLoggerFolderId = getFileIdFromFileName(getToken(), getGoogleDriveFolderName(), null);
 
             if(Strings.isNullOrEmpty(gpsLoggerFolderId)){
-                LOG.debug("GPSLogger folder still not found, will create");
-                gpsLoggerFolderId = createEmptyFile(token, googleDriveFolderName, "application/vnd.google-apps.folder", "root");
+                getLOG().debug("GPSLogger folder still not found, will create");
+                gpsLoggerFolderId = createEmptyFile(getToken(), getGoogleDriveFolderName(), "application/vnd.google-apps.folder", "root");
             }
 
             if (Strings.isNullOrEmpty(gpsLoggerFolderId)) {
@@ -89,11 +93,11 @@ public class GoogleDriveJob extends Job {
         }
 
         //Now search for the file
-        String gpxFileId = getFileIdFromFileName(token, fileName, gpsLoggerFolderId);
+        String gpxFileId = getFileIdFromFileName(getToken(), fileName, gpsLoggerFolderId);
 
         if (Strings.isNullOrEmpty(gpxFileId)) {
             //Create empty file first
-            gpxFileId = createEmptyFile(token, fileName, getMimeTypeFromFileName(fileName), gpsLoggerFolderId);
+            gpxFileId = createEmptyFile(getToken(), fileName, getMimeTypeFromFileName(fileName), gpsLoggerFolderId);
 
             if (Strings.isNullOrEmpty(gpxFileId)) {
                 EventBus.getDefault().post(new UploadEvents.GDrive().failed("Could not create file"));
@@ -103,12 +107,28 @@ public class GoogleDriveJob extends Job {
 
         if (!Strings.isNullOrEmpty(gpxFileId)) {
             //Set file's contents
-            updateFileContents(token, gpxFileId, Streams.getByteArrayFromInputStream(fis), fileName);
+            updateFileContents(getToken(), gpxFileId, Streams.getByteArrayFromInputStream(fis), fileName);
         }
         EventBus.getDefault().post(new UploadEvents.GDrive().succeeded());
     }
 
+    private HttpURLConnection connConfigWhenUpdatingFileContents(HttpURLConnection conn, byte[] fileContents, String fileName, String fileUpdateUrl, String authToken)
+    {
+        try {
+        setCommonConnProperty(conn, fileUpdateUrl, authToken);
+        conn.setRequestMethod("PUT");
+        conn.setRequestProperty("Content-Type", getMimeTypeFromFileName(fileName));
+        conn.setRequestProperty("Content-Length", String.valueOf(fileContents.length));
 
+        conn.setUseCaches(false);
+        conn.setDoInput(true);
+        conn.setDoOutput(true);
+        } catch (Exception e) {
+            getLOG().error("Could not update contents", e);
+        }
+
+        return conn;
+    }
 
     private String updateFileContents(String authToken, String gpxFileId, byte[] fileContents, String fileName) {
         HttpURLConnection conn = null;
@@ -117,22 +137,7 @@ public class GoogleDriveJob extends Job {
         String fileUpdateUrl = "https://www.googleapis.com/upload/drive/v2/files/" + gpxFileId + "?uploadType=media";
 
         try {
-
-            URL url = new URL(fileUpdateUrl);
-
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("PUT");
-            conn.setRequestProperty("User-Agent", "GPSLogger for Android");
-            conn.setRequestProperty("Authorization", "Bearer " + authToken);
-            conn.setRequestProperty("Content-Type", getMimeTypeFromFileName(fileName));
-            conn.setRequestProperty("Content-Length", String.valueOf(fileContents.length));
-
-            conn.setUseCaches(false);
-            conn.setDoInput(true);
-            conn.setDoOutput(true);
-
-			conn.setConnectTimeout(10000);
-			conn.setReadTimeout(30000);
+            conn = connConfigWhenUpdatingFileContents(conn, fileContents, fileName, fileUpdateUrl, authToken);
 
             DataOutputStream wr = new DataOutputStream(
                     conn.getOutputStream());
@@ -144,10 +149,10 @@ public class GoogleDriveJob extends Job {
 
             JSONObject fileMetadataJson = new JSONObject(fileMetadata);
             fileId = fileMetadataJson.getString("id");
-            LOG.debug("File updated : " + fileId);
+            getLOG().debug("File updated : " + fileId);
 
         } catch (Exception e) {
-            LOG.error("Could not update contents", e);
+            getLOG().error("Could not update contents", e);
         } finally {
             if (conn != null) {
                 conn.disconnect();
@@ -157,10 +162,40 @@ public class GoogleDriveJob extends Job {
         return fileId;
     }
 
-    private String createEmptyFile(String authToken, String fileName, String mimeType, String parentFolderId) {
+    private void setCommonConnProperty(HttpURLConnection conn, String createFileUrl, String authToken)
+    {
+        try {
+        URL url = new URL(createFileUrl);
+        conn = (HttpURLConnection) url.openConnection();
 
-        String fileId = null;
+        conn.setRequestProperty("User-Agent", "GPSLogger for Android");
+        conn.setRequestProperty("Authorization", "Bearer " + authToken);
+
+        conn.setConnectTimeout(10000);
+        conn.setReadTimeout(30000);
+        } catch (Exception e) {
+            getLOG().error("Could not update contents", e);
+        }
+    }
+
+    private void connConfigWhenCreatingEmptyFile(HttpURLConnection conn, String createFileUrl, String authToken)
+    {
+        try{
+        setCommonConnProperty(conn, createFileUrl, authToken);
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/json");
+
+        conn.setUseCaches(false);
+        conn.setDoInput(true);
+        conn.setDoOutput(true);
+        } catch (Exception e) {
+            getLOG().error("Could not update contents", e);
+        }
+    }
+
+    private String createEmptyFile(String authToken, String fileName, String mimeType, String parentFolderId) {
         HttpURLConnection conn = null;
+        String fileId = null;
 
         String createFileUrl = "https://www.googleapis.com/drive/v2/files";
 
@@ -175,21 +210,7 @@ public class GoogleDriveJob extends Job {
                 "            }";
 
         try {
-
-            URL url = new URL(createFileUrl);
-
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("User-Agent", "GPSLogger for Android");
-            conn.setRequestProperty("Authorization", "Bearer " + authToken);
-            conn.setRequestProperty("Content-Type", "application/json");
-
-            conn.setUseCaches(false);
-            conn.setDoInput(true);
-            conn.setDoOutput(true);
-
-			conn.setConnectTimeout(10000);
-			conn.setReadTimeout(30000);
+            connConfigWhenCreatingEmptyFile(conn, createFileUrl, authToken);
 
             DataOutputStream wr = new DataOutputStream(
                     conn.getOutputStream());
@@ -203,10 +224,10 @@ public class GoogleDriveJob extends Job {
 
             JSONObject fileMetadataJson = new JSONObject(fileMetadata);
             fileId = fileMetadataJson.getString("id");
-            LOG.debug("File created with ID " + fileId + " of type " + mimeType);
+            getLOG().debug("File created with ID " + fileId + " of type " + mimeType);
 
         } catch (Exception e) {
-            LOG.error("Could not create file", e);
+            getLOG().error("Could not create file", e);
         } finally {
             if (conn != null) {
                 conn.disconnect();
@@ -217,9 +238,17 @@ public class GoogleDriveJob extends Job {
         return fileId;
     }
 
+    private void connConfigWhenGettingFileIdFromFileName(HttpURLConnection conn, String searchUrl, String authToken)
+    {
+        try{
+        setCommonConnProperty(conn, searchUrl, authToken);
+        conn.setRequestMethod("GET");
+        } catch (Exception e) {
+            getLOG().error("Could not update contents", e);
+        }
+    }
 
     private String getFileIdFromFileName(String authToken, String fileName, String inFolderId) {
-
         HttpURLConnection conn = null;
         String fileId = "";
 
@@ -235,26 +264,19 @@ public class GoogleDriveJob extends Job {
             //To search in a folder:
             String searchUrl = "https://www.googleapis.com/drive/v2/files?q=title%20%3D%20%27" + fileName + "%27%20and%20trashed%20%3D%20false" + inFolderParam;
 
-            URL url = new URL(searchUrl);
+            connConfigWhenGettingFileIdFromFileName(conn, searchUrl, authToken);
 
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty("User-Agent", "GPSLogger for Android");
-            conn.setRequestProperty("Authorization", "OAuth " + authToken);
-			conn.setConnectTimeout(10000);
-			conn.setReadTimeout(30000);
-	
             String fileMetadata = Streams.getStringFromInputStream(conn.getInputStream());
 
 
             JSONObject fileMetadataJson = new JSONObject(fileMetadata);
             if (fileMetadataJson.getJSONArray("items") != null && fileMetadataJson.getJSONArray("items").length() > 0) {
                 fileId = fileMetadataJson.getJSONArray("items").getJSONObject(0).get("id").toString();
-                LOG.debug("Found file with ID " + fileId);
+                getLOG().debug("Found file with ID " + fileId);
             }
 
         } catch (Exception e) {
-            LOG.error("SearchForGPSLoggerFile", e);
+            getLOG().error("SearchForGPSLoggerFile", e);
         } finally {
             if (conn != null) {
                 conn.disconnect();
@@ -264,25 +286,29 @@ public class GoogleDriveJob extends Job {
         return fileId;
     }
 
+    private void connConfigWhenCheckFolderExists(HttpURLConnection conn, String searchUrl, String authToken)
+    {
+        try{
+        setCommonConnProperty(conn, searchUrl, authToken);
+        conn.setRequestMethod("GET");
+        } catch (Exception e) {
+            getLOG().error("Could not update contents", e);
+        }
+    }
+
     private boolean folderExists(String authToken, String gpsLoggerFolderId) {
         HttpURLConnection conn = null;
         try{
             String searchUrl = "https://www.googleapis.com/drive/v2/files/" + gpsLoggerFolderId;
-            URL url = new URL(searchUrl);
 
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty("User-Agent", "GPSLogger for Android");
-            conn.setRequestProperty("Authorization", "OAuth " + authToken);
-            conn.setConnectTimeout(10000);
-            conn.setReadTimeout(30000);
+            connConfigWhenCheckFolderExists(conn, searchUrl, authToken);
 
             conn.connect();
 
             return conn.getResponseCode() == 200;
         }
         catch(Exception e){
-            LOG.error("folderExists", e);
+            getLOG().error("folderExists", e);
         }
 
         return false;
@@ -324,8 +350,32 @@ public class GoogleDriveJob extends Job {
 
     @Override
     protected boolean shouldReRunOnThrowable(Throwable throwable) {
-        LOG.error("Could not upload to Google Drive", throwable);
+        getLOG().error("Could not upload to Google Drive", throwable);
         EventBus.getDefault().post(new UploadEvents.GDrive().failed("Could not upload to Google Drive", throwable));
         return false;
+    }
+
+    private String getToken() {
+        return token;
+    }
+
+    private void setToken(String token) {
+        this.token = token;
+    }
+
+    private File getGpxFile() {
+        return gpxFile;
+    }
+
+    private void setGpxFile(File gpxFile) {
+        this.gpxFile = gpxFile;
+    }
+
+    private String getGoogleDriveFolderName() {
+        return googleDriveFolderName;
+    }
+
+    private void setGoogleDriveFolderName(String googleDriveFolderName) {
+        this.googleDriveFolderName = googleDriveFolderName;
     }
 }

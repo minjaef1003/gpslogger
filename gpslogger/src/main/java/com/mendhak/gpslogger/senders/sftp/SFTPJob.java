@@ -24,7 +24,6 @@ public class SFTPJob extends Job {
         this.settings = settings;
     }
 
-
     @Override
     public void onAdded() {
         LOG.debug("SFTP Job added");

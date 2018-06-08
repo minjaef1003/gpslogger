@@ -1,16 +1,15 @@
 package com.mendhak.gpslogger.senders.owncloud;
 
 import com.mendhak.gpslogger.common.Strings;
+import com.mendhak.gpslogger.senders.SenderSettings;
 
-public class OwnCloudSettings {
-
+public class OwnCloudSettings extends SenderSettings {
     private String servername;
     private String username;
     private String password;
     private String directory;
 
-    public OwnCloudSettings() {
-    }
+    public OwnCloudSettings() {}
 
     public void setServername(String servername) {
         this.servername = servername;
@@ -47,5 +46,4 @@ public class OwnCloudSettings {
     public boolean validSettings(){
         return !Strings.isNullOrEmpty(servername);
     }
-
 }

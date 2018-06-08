@@ -43,8 +43,8 @@ public class NmeaFileLogger {
     private PreferenceHelper preferenceHelper = PreferenceHelper.getInstance();
     private Session session = Session.getInstance();
 
-    public NmeaFileLogger(String fileName) {
-        this.fileName = fileName;
+    public NmeaFileLogger(String setFileName) {
+        this.fileName = setFileName;
     }
 
     public void write(long timestamp, String nmeaSentence)  {
@@ -74,9 +74,9 @@ class NmeaWriteHandler implements Runnable {
     File gpxFile;
     String nmeaSentence;
 
-    NmeaWriteHandler(File gpxFile, String nmeaSentence) {
-        this.gpxFile = gpxFile;
-        this.nmeaSentence = nmeaSentence;
+    NmeaWriteHandler(File setGpxFile, String setNmeaSentence) {
+        this.gpxFile = setGpxFile;
+        this.nmeaSentence = setNmeaSentence;
     }
 
     @Override

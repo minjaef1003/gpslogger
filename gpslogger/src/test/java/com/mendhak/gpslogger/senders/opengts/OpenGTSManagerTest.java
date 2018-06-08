@@ -123,7 +123,15 @@ public class OpenGTSManagerTest {
         PreferenceHelper pm = mock(PreferenceHelper.class);
         OpenGTSManager client = new OpenGTSManager(pm);
         URL url = new URL("http://example.com:9001/?id=99&dev=99&acct=ACCT&batt=0&code=0xF020&alt=0.0&gprmc=$GPRMC,192429,A,5121.47965,N,011.71463,W,0.000000,0.000000,050316,,*02");
-        assertThat("URL Generated from basic location",  OpenGTSManager.getUrl("99","ACCT",sloc,"http","","example.com",9001).toString() , is(url.toString()));
+        OpenGTSSettings settings = new OpenGTSSettings();
+        settings.setDeviceID("99");
+        settings.setAccountName("ACCT");
+        settings.setCommunicationMethod("http");
+        settings.setServerPath("");
+        settings.setServer("example.com");
+        settings.setPort(9001);
+
+        assertThat("URL Generated from basic location",  OpenGTSManager.getUrl(settings, sloc).toString() , is(url.toString()));
     }
 
 
@@ -136,7 +144,15 @@ public class OpenGTSManagerTest {
         PreferenceHelper pm = mock(PreferenceHelper.class);
         OpenGTSManager client = new OpenGTSManager(pm);
         URL url = new URL("http://example.com:9001/xqa?id=99&dev=99&acct=ACCT&batt=0&code=0xF020&alt=0.0&gprmc=$GPRMC,192429,A,5121.47965,N,011.71463,W,0.000000,0.000000,050316,,*02");
-        assertThat("URL Generated without extra slashes",  OpenGTSManager.getUrl("99","ACCT",sloc,"http","/xqa","example.com",9001).toString() , is(url.toString()));
+        OpenGTSSettings settings = new OpenGTSSettings();
+        settings.setDeviceID("99");
+        settings.setAccountName("ACCT");
+        settings.setCommunicationMethod("http");
+        settings.setServerPath("/xqa");
+        settings.setServer("example.com");
+        settings.setPort(9001);
+
+        assertThat("URL Generated without extra slashes",  OpenGTSManager.getUrl(settings, sloc).toString() , is(url.toString()));
     }
 
     @Test
@@ -147,8 +163,15 @@ public class OpenGTSManagerTest {
 
         PreferenceHelper pm = mock(PreferenceHelper.class);
         OpenGTSManager client = new OpenGTSManager(pm);
+        OpenGTSSettings settings = new OpenGTSSettings();
+        settings.setDeviceID("99");
+        settings.setAccountName("ACCT");
+        settings.setCommunicationMethod("http");
+        settings.setServerPath("/xqa");
+        settings.setServer("example.com");
+        settings.setPort(9001);
 
-        assertThat("URL contains battery due to OpenGTS Bug >_<",  OpenGTSManager.getUrl("99","ACCT",sloc,"http","/xqa","example.com",9001).toString() , containsString("batt"));
+        assertThat("URL contains battery due to OpenGTS Bug >_<",  OpenGTSManager.getUrl(settings, sloc).toString() , containsString("batt"));
     }
 
     @Test
@@ -160,7 +183,15 @@ public class OpenGTSManagerTest {
         PreferenceHelper pm = mock(PreferenceHelper.class);
         OpenGTSManager client = new OpenGTSManager(pm);
         URL url = new URL("http://example.com:9001/?id=99&dev=99&acct=99&batt=0&code=0xF020&alt=0.0&gprmc=$GPRMC,192429,A,5121.47965,N,011.71463,W,0.000000,0.000000,050316,,*02");
-        assertThat("Uses id if account name is missing",  OpenGTSManager.getUrl("99",null,sloc,"HTTP","","example.com",9001).toString() , is(url.toString()));
+        OpenGTSSettings settings = new OpenGTSSettings();
+        settings.setDeviceID("99");
+        settings.setAccountName(null);
+        settings.setCommunicationMethod("HTTP");
+        settings.setServerPath("");
+        settings.setServer("example.com");
+        settings.setPort(9001);
+
+        assertThat("Uses id if account name is missing",  OpenGTSManager.getUrl(settings, sloc).toString() , is(url.toString()));
     }
 
 
@@ -172,7 +203,15 @@ public class OpenGTSManagerTest {
         PreferenceHelper pm = mock(PreferenceHelper.class);
         OpenGTSManager client = new OpenGTSManager(pm);
         URL url = new URL("https://example.com:9001/?id=99&dev=99&acct=99&batt=0&code=0xF020&alt=0.0&gprmc=$GPRMC,192429,A,5121.47965,N,011.71463,W,0.000000,0.000000,050316,,*02");
-        assertThat("Uses id if account name is missing",  OpenGTSManager.getUrl("99",null,sloc, "HTTPS", "","example.com",9001).toString() , is(url.toString()));
+        OpenGTSSettings settings = new OpenGTSSettings();
+        settings.setDeviceID("99");
+        settings.setAccountName(null);
+        settings.setCommunicationMethod("HTTPS");
+        settings.setServerPath("");
+        settings.setServer("example.com");
+        settings.setPort(9001);
+
+        assertThat("Uses id if account name is missing",  OpenGTSManager.getUrl(settings, sloc).toString() , is(url.toString()));
     }
 
     @Test

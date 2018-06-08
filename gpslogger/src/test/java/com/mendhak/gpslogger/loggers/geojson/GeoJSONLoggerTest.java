@@ -52,7 +52,7 @@ public class GeoJSONLoggerTest {
 
     @Test
     public void annotate() throws Exception {
-        GeoJSONWriterPoints geojson = new GeoJSONWriterPoints(null, getLocation(), "test", false);
+        GeoJSONWriterPoints geojson = new GeoJSONWriterPoints(null, getLocation(), "test");
         String result = geojson.getString(false);
         String expected = "{\"type\": \"FeatureCollection\",\"features\": [\n" +
                 "{\"type\": \"Feature\",\"properties\":{\"time\":\"1970-01-01T00:00:00.000Z\"," +
@@ -64,7 +64,7 @@ public class GeoJSONLoggerTest {
 
     @Test
     public void annotate_with_remove_badchars() throws Exception {
-        GeoJSONWriterPoints geojson = new GeoJSONWriterPoints(null, getLocation(), "\"Double Quotes\" and \\Backslashes need to go\\", false);
+        GeoJSONWriterPoints geojson = new GeoJSONWriterPoints(null, getLocation(), "\"Double Quotes\" and \\Backslashes need to go\\");
         String result = geojson.getString(false);
         String expected = "{\"type\": \"FeatureCollection\",\"features\": [\n" +
                 "{\"type\": \"Feature\",\"properties\":{\"time\":\"1970-01-01T00:00:00.000Z\"," +
@@ -77,7 +77,7 @@ public class GeoJSONLoggerTest {
 
     @Test
     public void testLocationString() throws Exception {
-        GeoJSONWriterPoints geojson = new GeoJSONWriterPoints(null, getLocation(), null, false);
+        GeoJSONWriterPoints geojson = new GeoJSONWriterPoints(null, getLocation(), null);
         String result = geojson.getString(false);
         String expected = "{\"type\": \"FeatureCollection\",\"features\": [\n" +
                 "{\"type\": \"Feature\",\"properties\":{\"time\":\"1970-01-01T00:00:00.000Z\"," +
@@ -90,7 +90,7 @@ public class GeoJSONLoggerTest {
     }
     @Test
     public void testLocationStringAppend() throws Exception {
-        GeoJSONWriterPoints geojson = new GeoJSONWriterPoints(null, getLocation(), null, false);
+        GeoJSONWriterPoints geojson = new GeoJSONWriterPoints(null, getLocation(), null);
         String result = geojson.getString(true);
         String expected = ",{\"type\": \"Feature\",\"properties\":{\"time\":\"1970-01-01T00:00:00.000Z\"," +
                 "\"provider\":\"MOCK\",\"time_long\":\"0\",\"altitude\":\"9001.0\"," +

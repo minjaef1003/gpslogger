@@ -111,8 +111,7 @@ public class Strings {
      * @param bearingDegrees
      * @return
      */
-    public static String getBearingDescription(float bearingDegrees,
-                                               Context context) {
+    public static String getBearingDescription(float bearingDegrees, Context context) {
         String[] bearingDescriptionList = {
                 context.getString(R.string.direction_northnortheast),
                 context.getString(R.string.direction_northnortheast) ,
@@ -219,6 +218,7 @@ public class Strings {
      * @param text
      * @return
      */
+ 
     public static boolean isNullOrEmpty(String text) {
         return text == null ||  text.trim().length() == 0;
     }

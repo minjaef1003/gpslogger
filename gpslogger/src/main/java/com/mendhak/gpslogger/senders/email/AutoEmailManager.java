@@ -33,7 +33,7 @@ import java.util.List;
 
 public class AutoEmailManager extends FileSender {
 
-    PreferenceHelper preferenceHelper;
+    private final PreferenceHelper preferenceHelper; // Self Encapsulate Field
 
     public AutoEmailManager(PreferenceHelper helper) {
         this.preferenceHelper = helper;
@@ -57,9 +57,9 @@ public class AutoEmailManager extends FileSender {
         jobManager.cancelJobsInBackground(new CancelResult.AsyncCancelCallback() {
             @Override
             public void onCancelled(CancelResult cancelResult) {
-                jobManager.addJobInBackground(new AutoEmailJob(preferenceHelper.getSmtpServer(),
-                        preferenceHelper.getSmtpPort(), preferenceHelper.getSmtpUsername(), preferenceHelper.getSmtpPassword(),
-                        preferenceHelper.isSmtpSsl(), preferenceHelper.getAutoEmailTargets(), preferenceHelper.getSmtpSenderAddress(),
+                jobManager.addJobInBackground(new AutoEmailJob(getPreferenceHelper().getSmtpServer(),
+                        getPreferenceHelper().getSmtpPort(), getPreferenceHelper().getSmtpUsername(), getPreferenceHelper().getSmtpPassword(),
+                        getPreferenceHelper().isSmtpSsl(), getPreferenceHelper().getAutoEmailTargets(), getPreferenceHelper().getSmtpSenderAddress(),
                         subject, body, filesToSend.toArray(new File[filesToSend.size()])));
             }
         }, TagConstraint.ANY, AutoEmailJob.getJobTag(filesToSend.toArray(new File[filesToSend.size()])));
@@ -69,18 +69,18 @@ public class AutoEmailManager extends FileSender {
 
     @Override
     public boolean isAvailable() {
-        return isValid( preferenceHelper.getSmtpServer(), preferenceHelper.getSmtpPort(), preferenceHelper.getSmtpUsername(), preferenceHelper.getSmtpPassword(), preferenceHelper.getAutoEmailTargets());
+        return isValid( getPreferenceHelper().getSmtpServer(), getPreferenceHelper().getSmtpPort(), getPreferenceHelper().getSmtpUsername(), getPreferenceHelper().getSmtpPassword(), getPreferenceHelper().getAutoEmailTargets());
     }
 
     @Override
     public boolean hasUserAllowedAutoSending() {
-        return preferenceHelper.isEmailAutoSendEnabled();
+        return getPreferenceHelper().isEmailAutoSendEnabled();
     }
 
 
     public void sendTestEmail(String smtpServer, String smtpPort,
-                       String smtpUsername, String smtpPassword, boolean smtpUseSsl,
-                       String emailTarget, String fromAddress) {
+                              String smtpUsername, String smtpPassword, boolean smtpUseSsl,
+                              String emailTarget, String fromAddress) {
 
         String subject = "Test Email from GPSLogger at " + Strings.getReadableDateTime(new Date());
         String body ="Test Email from GPSLogger at " + Strings.getReadableDateTime(new Date());
@@ -98,8 +98,12 @@ public class AutoEmailManager extends FileSender {
     }
 
     public boolean isValid(String server, String port, String username, String password, String target) {
-                return !Strings.isNullOrEmpty(server) && !Strings.isNullOrEmpty(port) && !Strings.isNullOrEmpty(username) && !Strings.isNullOrEmpty(target);
+        return !Strings.isNullOrEmpty(server) && !Strings.isNullOrEmpty(port) && !Strings.isNullOrEmpty(username) && !Strings.isNullOrEmpty(target);
 
+    }
+
+    private PreferenceHelper getPreferenceHelper() {
+        return preferenceHelper;
     }
 }
 

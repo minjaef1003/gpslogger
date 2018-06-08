@@ -39,16 +39,19 @@ import org.slf4j.Logger;
 
 import java.io.File;
 import java.util.List;
-import java.util.Locale;
 
 
 public class DropBoxManager extends FileSender {
 
     private static final Logger LOG = Logs.of(DropBoxManager.class);
-    private final PreferenceHelper preferenceHelper;
+    private final PreferenceHelper preferenceHelper; // Self Encapsulate Field
 
     public DropBoxManager(PreferenceHelper preferenceHelper) {
         this.preferenceHelper = preferenceHelper;
+    }
+
+    private static Logger getLOG() {
+        return LOG;
     }
 
     /**
@@ -57,7 +60,7 @@ public class DropBoxManager extends FileSender {
      * @return True/False
      */
     public boolean isLinked() {
-        return !Strings.isNullOrEmpty(preferenceHelper.getDropBoxAccessKeyName());
+        return !Strings.isNullOrEmpty(getPreferenceHelper().getDropBoxAccessKeyName());
     }
 
     public boolean finishAuthorization() {
@@ -81,7 +84,7 @@ public class DropBoxManager extends FileSender {
      * @param key    The Access Key
      */
     private void storeKeys(String key) {
-        preferenceHelper.setDropBoxAccessKeyName(key);
+        getPreferenceHelper().setDropBoxAccessKeyName(key);
     }
 
     public void startAuthentication(Context context) {
@@ -90,34 +93,33 @@ public class DropBoxManager extends FileSender {
     }
 
     public void unLink() {
-        preferenceHelper.setDropBoxAccessKeyName(null);
-        preferenceHelper.setDropBoxOauth1Secret(null);
+        getPreferenceHelper().setDropBoxAccessKeyName(null);
+        getPreferenceHelper().setDropBoxOauth1Secret(null);
     }
 
     @Override
     public void uploadFile(List<File> files) {
         for (File f : files) {
-            LOG.debug(f.getName());
+            getLOG().debug(f.getName());
             uploadFile(f.getName());
         }
     }
 
     @Override
     public boolean isAvailable() {
-        return isLinked() && preferenceHelper.getDropBoxAccessKeyName() != null;
+        return isLinked() && getPreferenceHelper().getDropBoxAccessKeyName() != null;
     }
 
 
     @Override
     public boolean hasUserAllowedAutoSending() {
-        return  preferenceHelper.isDropboxAutoSendEnabled();
+        return  getPreferenceHelper().isDropboxAutoSendEnabled();
     }
 
     public void uploadFile(final String fileName) {
 
-        if(!Strings.isNullOrEmpty(preferenceHelper.getDropBoxOauth1Secret())){
-            convertOauth1ToOauth2Token(fileName);
-            return;
+        if(!Strings.isNullOrEmpty(getPreferenceHelper().getDropBoxOauth1Secret())){
+            convertOauth1ToOauth2Token(); // remove parameter
         }
 
         final JobManager jobManager = AppSettings.getJobManager();
@@ -134,7 +136,7 @@ public class DropBoxManager extends FileSender {
      * Attempts to upgrade Oauth1 tokens to Oauth2 before performing a file upload
      * @param pendingFileName
      */
-    void convertOauth1ToOauth2Token(final String pendingFileName) {
+    void convertOauth1ToOauth2Token() {
         AsyncTask<Void, Void, String> task = new AsyncTask<Void, Void, String>() {
 
             DbxOAuth1Upgrader upgrader;
@@ -143,22 +145,20 @@ public class DropBoxManager extends FileSender {
             @Override
             protected String doInBackground(Void... params) {
 
-                LOG.warn("Found old Dropbox Oauth1 tokens! Attempting upgrade now.");
+                getLOG().warn("Found old Dropbox Oauth1 tokens! Attempting upgrade now.");
                 try {
-                    DbxRequestConfig requestConfig = DbxRequestConfig.newBuilder("GPSLogger").build();
-                    DbxAppInfo appInfo = new DbxAppInfo(BuildConfig.DROPBOX_APP_KEY, BuildConfig.DROPBOX_APP_SECRET);
-                    upgrader = new DbxOAuth1Upgrader(requestConfig, appInfo);
-                    oAuth1AccessToken = new DbxOAuth1AccessToken(preferenceHelper.getDropBoxAccessKeyName(), preferenceHelper.getDropBoxOauth1Secret());
-                    LOG.debug("Requesting Oauth2 token...");
+                    upgrader = getUpgrader(); // Introduce Foreign Method
+                    oAuth1AccessToken = new DbxOAuth1AccessToken(getPreferenceHelper().getDropBoxAccessKeyName(), getPreferenceHelper().getDropBoxOauth1Secret());
+                    getLOG().debug("Requesting Oauth2 token...");
                     String newToken = upgrader.createOAuth2AccessToken(oAuth1AccessToken);
-                    LOG.debug("New token is " + newToken);
-                    LOG.debug("Disabling the old Oauth1 token ");
+                    getLOG().debug("New token is " + newToken);
+                    getLOG().debug("Disabling the old Oauth1 token ");
                     upgrader.disableOAuth1AccessToken(oAuth1AccessToken);
                     return newToken;
 
                 } catch (Exception e) {
                     EventBus.getDefault().post(new UploadEvents.Dropbox().failed("DropBox Oauth2 Token upgrade failed. Please reauthorize DropBox from the settings.", e));
-                    LOG.error("Could not upgrade to Oauth2", e);
+                    getLOG().error("Could not upgrade to Oauth2", e);
                 }
 
                 return null;
@@ -169,7 +169,6 @@ public class DropBoxManager extends FileSender {
                 if (authToken != null) {
                     unLink();
                     storeKeys(authToken);
-                    uploadFile(pendingFileName);
                 }
 
             }
@@ -177,13 +176,22 @@ public class DropBoxManager extends FileSender {
         task.execute();
     }
 
+    private DbxOAuth1Upgrader getUpgrader()
+    {
+        DbxRequestConfig requestConfig = DbxRequestConfig.newBuilder("GPSLogger").build();
+        DbxAppInfo appInfo = new DbxAppInfo(BuildConfig.DROPBOX_APP_KEY, BuildConfig.DROPBOX_APP_SECRET);
 
+        return new DbxOAuth1Upgrader(requestConfig, appInfo);
+    }
 
     @Override
     public boolean accept(File dir, String name) {
         return true;
     }
 
+    private PreferenceHelper getPreferenceHelper() {
+        return preferenceHelper;
+    }
 }
 
 

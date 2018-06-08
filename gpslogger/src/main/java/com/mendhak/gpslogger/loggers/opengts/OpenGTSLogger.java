@@ -43,7 +43,6 @@ public class OpenGTSLogger implements FileLogger {
 
     @Override
     public void write(Location loc) throws Exception {
-
         OpenGTSManager manager = new OpenGTSManager(preferenceHelper);
         manager.sendLocations(new SerializableLocation[]{new SerializableLocation(loc)});
     }
