@@ -528,53 +528,20 @@ public class GpsMainActivity extends AppCompatActivity
         materialDrawer.setOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
             @Override
             public boolean onItemClick(View view, int i, IDrawerItem iDrawerItem) {
-
-                switch (iDrawerItem.getIdentifier()) {
-                    case 1000:
-                        launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.GENERAL);
-                        break;
-                    case 1001:
-                        launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.LOGGING);
-                        break;
-                    case 1002:
-                        launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.PERFORMANCE);
-                        break;
-                    case 1003:
-                        launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.UPLOAD);
-                        break;
-                    case 1004:
-                        launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.GDOCS);
-                        break;
-                    case 1005:
-                        launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.DROPBOX);
-                        break;
-                    case 1006:
-                        launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.EMAIL);
-                        break;
-                    case 1007:
-                        launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.FTP);
-                        break;
-                    case 1008:
-                        launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.OPENGTS);
-                        break;
-                    case 1009:
-                        launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.OSM);
-                        break;
-                    case 1010:
-                        launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.OWNCLOUD);
-                        break;
-                    case 1015:
-                        launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.SFTP);
-                        break;
-                    case 9000:
-                        Intent faqtivity = new Intent(getApplicationContext(), Faqtivity.class);
-                        startActivity(faqtivity);
-                        break;
-                    case 9001:
-                        EventBus.getDefault().post(new CommandEvents.RequestStartStop(false));
-                        finish();
-                        break;
-
+                MainPreferenceFactory factory = new MainPreferenceFactory();
+                String preferenceFragment = factory.setPreferenceFragment(iDrawerItem.getIdentifier());
+                launchPreferenceScreen(preferenceFragment);
+                if(preferenceFragment==null) {
+                    switch (iDrawerItem.getIdentifier()) {
+                        case 9000:
+                            Intent faqtivity = new Intent(getApplicationContext(), Faqtivity.class);
+                            startActivity(faqtivity);
+                            break;
+                        case 9001:
+                            EventBus.getDefault().post(new CommandEvents.RequestStartStop(false));
+                            finish();
+                            break;
+                    }
                 }
                 return false;
             }
