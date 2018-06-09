@@ -30,7 +30,6 @@ public class UploadEvents {
         public String message;
         public Throwable throwable;
 
-
         /**
          * Convenience function, returns a succeeded event
          */
