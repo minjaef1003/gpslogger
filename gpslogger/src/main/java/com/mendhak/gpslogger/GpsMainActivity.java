@@ -504,77 +504,44 @@ public class GpsMainActivity extends AppCompatActivity
 
 
 
-        materialDrawer.addItem(GpsLoggerDrawerItem.newPrimary(R.string.pref_general_title, R.string.pref_general_summary, R.drawable.settings, 1000));
-        materialDrawer.addItem(GpsLoggerDrawerItem.newPrimary(R.string.pref_logging_title, R.string.pref_logging_summary, R.drawable.loggingsettings, 1001));
-        materialDrawer.addItem(GpsLoggerDrawerItem.newPrimary(R.string.pref_performance_title, R.string.pref_performance_summary, R.drawable.performance, 1002));
+        materialDrawer.addItem(GpsLoggerDrawerItem.getInstance().newPrimary(R.string.pref_general_title, R.string.pref_general_summary, R.drawable.settings, 1000));
+        materialDrawer.addItem(GpsLoggerDrawerItem.getInstance().newPrimary(R.string.pref_logging_title, R.string.pref_logging_summary, R.drawable.loggingsettings, 1001));
+        materialDrawer.addItem(GpsLoggerDrawerItem.getInstance().newPrimary(R.string.pref_performance_title, R.string.pref_performance_summary, R.drawable.performance, 1002));
         materialDrawer.addItem(new DividerDrawerItem());
 
-        materialDrawer.addItem(GpsLoggerDrawerItem.newPrimary(R.string.pref_autosend_title, R.string.pref_autosend_summary, R.drawable.autosend, 1003));
-        materialDrawer.addItem(GpsLoggerDrawerItem.newSecondary(R.string.gdocs_setup_title, R.drawable.googledrive, 1004));
-        materialDrawer.addItem(GpsLoggerDrawerItem.newSecondary(R.string.dropbox_setup_title, R.drawable.dropbox, 1005));
-        materialDrawer.addItem(GpsLoggerDrawerItem.newSecondary(R.string.sftp_setup_title, R.drawable.sftp, 1015));
-        materialDrawer.addItem(GpsLoggerDrawerItem.newSecondary(R.string.opengts_setup_title, R.drawable.opengts, 1008));
-        materialDrawer.addItem(GpsLoggerDrawerItem.newSecondary(R.string.osm_setup_title, R.drawable.openstreetmap, 1009));
-        materialDrawer.addItem(GpsLoggerDrawerItem.newSecondary(R.string.autoemail_title, R.drawable.email, 1006));
-        materialDrawer.addItem(GpsLoggerDrawerItem.newSecondary(R.string.owncloud_setup_title, R.drawable.owncloud, 1010));
-        materialDrawer.addItem(GpsLoggerDrawerItem.newSecondary(R.string.autoftp_setup_title, R.drawable.ftp, 1007));
+        materialDrawer.addItem(GpsLoggerDrawerItem.getInstance().newPrimary(R.string.pref_autosend_title, R.string.pref_autosend_summary, R.drawable.autosend, 1003));
+        materialDrawer.addItem(GpsLoggerDrawerItem.getInstance().newSecondary(R.string.gdocs_setup_title, R.drawable.googledrive, 1004));
+        materialDrawer.addItem(GpsLoggerDrawerItem.getInstance().newSecondary(R.string.dropbox_setup_title, R.drawable.dropbox, 1005));
+        materialDrawer.addItem(GpsLoggerDrawerItem.getInstance().newSecondary(R.string.sftp_setup_title, R.drawable.sftp, 1015));
+        materialDrawer.addItem(GpsLoggerDrawerItem.getInstance().newSecondary(R.string.opengts_setup_title, R.drawable.opengts, 1008));
+        materialDrawer.addItem(GpsLoggerDrawerItem.getInstance().newSecondary(R.string.osm_setup_title, R.drawable.openstreetmap, 1009));
+        materialDrawer.addItem(GpsLoggerDrawerItem.getInstance().newSecondary(R.string.autoemail_title, R.drawable.email, 1006));
+        materialDrawer.addItem(GpsLoggerDrawerItem.getInstance().newSecondary(R.string.owncloud_setup_title, R.drawable.owncloud, 1010));
+        materialDrawer.addItem(GpsLoggerDrawerItem.getInstance().newSecondary(R.string.autoftp_setup_title, R.drawable.ftp, 1007));
 
         materialDrawer.addItem(new DividerDrawerItem());
 
-        materialDrawer.addStickyFooterItem(GpsLoggerDrawerItem.newSecondary(R.string.menu_faq, R.drawable.helpfaq, 9000));
-        materialDrawer.addStickyFooterItem(GpsLoggerDrawerItem.newSecondary(R.string.menu_exit, R.drawable.exit, 9001));
+        materialDrawer.addStickyFooterItem(GpsLoggerDrawerItem.getInstance().newSecondary(R.string.menu_faq, R.drawable.helpfaq, 9000));
+        materialDrawer.addStickyFooterItem(GpsLoggerDrawerItem.getInstance().newSecondary(R.string.menu_exit, R.drawable.exit, 9001));
 
 
         materialDrawer.setOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
             @Override
             public boolean onItemClick(View view, int i, IDrawerItem iDrawerItem) {
-
-                switch (iDrawerItem.getIdentifier()) {
-                    case 1000:
-                        launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.GENERAL);
-                        break;
-                    case 1001:
-                        launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.LOGGING);
-                        break;
-                    case 1002:
-                        launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.PERFORMANCE);
-                        break;
-                    case 1003:
-                        launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.UPLOAD);
-                        break;
-                    case 1004:
-                        launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.GDOCS);
-                        break;
-                    case 1005:
-                        launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.DROPBOX);
-                        break;
-                    case 1006:
-                        launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.EMAIL);
-                        break;
-                    case 1007:
-                        launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.FTP);
-                        break;
-                    case 1008:
-                        launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.OPENGTS);
-                        break;
-                    case 1009:
-                        launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.OSM);
-                        break;
-                    case 1010:
-                        launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.OWNCLOUD);
-                        break;
-                    case 1015:
-                        launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.SFTP);
-                        break;
-                    case 9000:
-                        Intent faqtivity = new Intent(getApplicationContext(), Faqtivity.class);
-                        startActivity(faqtivity);
-                        break;
-                    case 9001:
-                        EventBus.getDefault().post(new CommandEvents.RequestStartStop(false));
-                        finish();
-                        break;
-
+                MainPreferenceFactory factory = new MainPreferenceFactory();
+                String preferenceFragment = factory.setPreferenceFragment(iDrawerItem.getIdentifier());
+                launchPreferenceScreen(preferenceFragment);
+                if(preferenceFragment==null) {
+                    switch (iDrawerItem.getIdentifier()) {
+                        case 9000:
+                            Intent faqtivity = new Intent(getApplicationContext(), Faqtivity.class);
+                            startActivity(faqtivity);
+                            break;
+                        case 9001:
+                            EventBus.getDefault().post(new CommandEvents.RequestStartStop(false));
+                            finish();
+                            break;
+                    }
                 }
                 return false;
             }
