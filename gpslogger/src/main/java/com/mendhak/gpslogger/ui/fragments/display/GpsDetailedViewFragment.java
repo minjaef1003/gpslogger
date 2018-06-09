@@ -193,31 +193,31 @@ public class GpsDetailedViewFragment extends GenericViewFragment {
 
             if(preferenceHelper.isAutoSendEnabled()){
                 StringBuilder sb = new StringBuilder();
-                if (FileSenderFactory.getEmailSender().isAutoSendAvailable()) {
+                if (FileSenderFactory.fileSenderContext.getEmailSender().isAutoSendAvailable()) {
                     sb.append(getString(R.string.autoemail_title)).append("\n");
                 }
 
-                if (FileSenderFactory.getFtpSender().isAutoSendAvailable()) {
+                if (FileSenderFactory.fileSenderContext.getFtpSender().isAutoSendAvailable()) {
                     sb.append(getString(R.string.autoftp_setup_title)).append("\n");
                 }
 
-                if (FileSenderFactory.getGoogleDriveSender().isAutoSendAvailable()) {
+                if (FileSenderFactory.fileSenderContext.getGoogleDriveSender().isAutoSendAvailable()) {
                     sb.append(getString(R.string.gdocs_setup_title)).append("\n");
                 }
 
-                if (FileSenderFactory.getOsmSender().isAutoSendAvailable()) {
+                if (FileSenderFactory.fileSenderContext.getOsmSender().isAutoSendAvailable()) {
                     sb.append(getString(R.string.osm_setup_title)).append("\n");
                 }
 
-                if (FileSenderFactory.getDropBoxSender().isAutoSendAvailable()) {
+                if (FileSenderFactory.fileSenderContext.getDropBoxSender().isAutoSendAvailable()) {
                     sb.append(getString(R.string.dropbox_setup_title)).append("\n");
                 }
 
-                if (FileSenderFactory.getOpenGTSSender().isAutoSendAvailable()) {
+                if (FileSenderFactory.fileSenderContext.getOpenGTSSender().isAutoSendAvailable()) {
                     sb.append(getString(R.string.opengts_setup_title)).append("\n");
                 }
 
-                if (FileSenderFactory.getOwnCloudSender().isAutoSendAvailable()) {
+                if (FileSenderFactory.fileSenderContext.getOwnCloudSender().isAutoSendAvailable()) {
                     sb.append(getString(R.string.owncloud_setup_title)).append("\n");
                 }
 

@@ -42,38 +42,7 @@ public class FileSenderFactory {
 
     private static final Logger LOG = Logs.of(FileSenderFactory.class);
 
-
-    public static FileSender getOsmSender() {
-        return new OpenStreetMapManager(PreferenceHelper.getInstance());
-    }
-
-    public static FileSender getDropBoxSender() {
-        return new DropBoxManager(PreferenceHelper.getInstance());
-    }
-
-    public static FileSender getGoogleDriveSender() {
-        return new GoogleDriveManager(PreferenceHelper.getInstance());
-    }
-
-    public static FileSender getEmailSender() {
-        return new AutoEmailManager(PreferenceHelper.getInstance());
-    }
-
-    public static FileSender getOpenGTSSender() {
-        return new OpenGTSManager(PreferenceHelper.getInstance());
-    }
-
-    public static FileSender getFtpSender() {
-        return new FtpManager(PreferenceHelper.getInstance());
-    }
-
-    public static FileSender getOwnCloudSender() {
-        return new OwnCloudManager(PreferenceHelper.getInstance());
-    }
-
-    public static FileSender getSFTPSender() {
-        return new SFTPManager(PreferenceHelper.getInstance());
-    }
+    public static FileSenderContext fileSenderContext;
 
     public static void autoSendFiles(final String fileToSend) {
 
@@ -137,42 +106,40 @@ public class FileSenderFactory {
         }
     }
 
-
     private static List<FileSender> getFileAutosenders() {
 
         List<FileSender> senders = new ArrayList<>();
 
-
-        if(getGoogleDriveSender().isAutoSendAvailable()){
-            senders.add(getGoogleDriveSender());
+        if(fileSenderContext.getGoogleDriveSender().isAutoSendAvailable()){
+            senders.add(fileSenderContext.getGoogleDriveSender());
         }
 
-        if(getOsmSender().isAutoSendAvailable()){
-            senders.add(getOsmSender());
+        if(fileSenderContext.getOsmSender().isAutoSendAvailable()){
+            senders.add(fileSenderContext.getOsmSender());
         }
 
-        if(getEmailSender().isAutoSendAvailable()){
-            senders.add(getEmailSender());
+        if(fileSenderContext.getEmailSender().isAutoSendAvailable()){
+            senders.add(fileSenderContext.getEmailSender());
         }
 
-        if(getDropBoxSender().isAutoSendAvailable()){
-            senders.add(getDropBoxSender());
+        if(fileSenderContext.getDropBoxSender().isAutoSendAvailable()){
+            senders.add(fileSenderContext.getDropBoxSender());
         }
 
-        if(getOpenGTSSender().isAutoSendAvailable()){
-            senders.add(getOpenGTSSender());
+        if(fileSenderContext.getOpenGTSSender().isAutoSendAvailable()){
+            senders.add(fileSenderContext.getOpenGTSSender());
         }
 
-        if(getFtpSender().isAutoSendAvailable()){
-            senders.add(getFtpSender());
+        if(fileSenderContext.getFtpSender().isAutoSendAvailable()){
+            senders.add(fileSenderContext.getFtpSender());
         }
 
-        if(getOwnCloudSender().isAutoSendAvailable()){
-            senders.add(getOwnCloudSender());
+        if(fileSenderContext.getOwnCloudSender().isAutoSendAvailable()){
+            senders.add(fileSenderContext.getOwnCloudSender());
         }
 
-        if(getSFTPSender().isAutoSendAvailable()){
-            senders.add(getSFTPSender());
+        if(fileSenderContext.getSFTPSender().isAutoSendAvailable()){
+            senders.add(fileSenderContext.getSFTPSender());
         }
 
         return senders;

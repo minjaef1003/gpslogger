@@ -884,74 +884,74 @@ public class GpsMainActivity extends AppCompatActivity
 
 
     private void uploadToOpenStreetMap() {
-        if (!FileSenderFactory.getOsmSender().isAvailable()) {
+        if (!FileSenderFactory.fileSenderContext.getOsmSender().isAvailable()) {
             launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.OSM);
             return;
         }
 
-        showFileListDialog(FileSenderFactory.getOsmSender());
+        showFileListDialog(FileSenderFactory.fileSenderContext.getOsmSender());
     }
 
     private void uploadToDropBox() {
 
-        if (!FileSenderFactory.getDropBoxSender().isAvailable()) {
+        if (!FileSenderFactory.fileSenderContext.getDropBoxSender().isAvailable()) {
             launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.DROPBOX);
             return;
         }
 
-        showFileListDialog(FileSenderFactory.getDropBoxSender());
+        showFileListDialog(FileSenderFactory.fileSenderContext.getDropBoxSender());
     }
 
 
     private void uploadToSFTP(){
-        if(!FileSenderFactory.getSFTPSender().isAvailable()){
+        if(!FileSenderFactory.fileSenderContext.getSFTPSender().isAvailable()){
             launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.SFTP);
             return;
         }
 
-        showFileListDialog(FileSenderFactory.getSFTPSender());
+        showFileListDialog(FileSenderFactory.fileSenderContext.getSFTPSender());
     }
 
     private void uploadToOwnCloud() {
 
-        if (!FileSenderFactory.getOwnCloudSender().isAvailable()) {
+        if (!FileSenderFactory.fileSenderContext.getOwnCloudSender().isAvailable()) {
             launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.OWNCLOUD);
             return;
         }
 
-        showFileListDialog(FileSenderFactory.getOwnCloudSender());
+        showFileListDialog(FileSenderFactory.fileSenderContext.getOwnCloudSender());
     }
 
     private void sendToOpenGTS() {
-        if (!FileSenderFactory.getOpenGTSSender().isAvailable()) {
+        if (!FileSenderFactory.fileSenderContext.getOpenGTSSender().isAvailable()) {
             launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.OPENGTS);
         } else {
-            showFileListDialog(FileSenderFactory.getOpenGTSSender());
+            showFileListDialog(FileSenderFactory.fileSenderContext.getOpenGTSSender());
         }
     }
 
     private void uploadToGoogleDocs() {
-        if (!FileSenderFactory.getGoogleDriveSender().isAvailable()) {
+        if (!FileSenderFactory.fileSenderContext.getGoogleDriveSender().isAvailable()) {
             launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.GDOCS);
             return;
         }
 
-        showFileListDialog(FileSenderFactory.getGoogleDriveSender());
+        showFileListDialog(FileSenderFactory.fileSenderContext.getGoogleDriveSender());
     }
 
     private void sendToFtp() {
-        if (!FileSenderFactory.getFtpSender().isAvailable()) {
+        if (!FileSenderFactory.fileSenderContext.getFtpSender().isAvailable()) {
             launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.FTP);
         } else {
-            showFileListDialog(FileSenderFactory.getFtpSender());
+            showFileListDialog(FileSenderFactory.fileSenderContext.getFtpSender());
         }
     }
 
     private void selectAndEmailFile() {
-        if (!FileSenderFactory.getEmailSender().isAvailable()) {
+        if (!FileSenderFactory.fileSenderContext.getEmailSender().isAvailable()) {
             launchPreferenceScreen(MainPreferenceActivity.PREFERENCE_FRAGMENTS.EMAIL);
         } else {
-            showFileListDialog(FileSenderFactory.getEmailSender());
+            showFileListDialog(FileSenderFactory.fileSenderContext.getEmailSender());
         }
     }
 
