@@ -18,37 +18,56 @@
  */
 
 package com.mendhak.gpslogger.common.events;
-
+/*
+ Added 6/ 7/ 2018
+ ProfileEvents
+ Strategic patterns were applied.
+ Properties are similar and can be edited individually
+ when new strategies are applied, without having to modify existing code
+ */
 public class ProfileEvents {
-
     /**
      * Requests saving the current profile and loading this new one.
      */
-    public static class SwitchToProfile {
+    public static abstract class Profile{
         public String newProfileName;
-
-        public SwitchToProfile(String newProfileName){
+        public Profile(String newProfileName){
             this.newProfileName = newProfileName;
+        }
+
+    }
+
+    public static class SwitchToProfile extends Profile{
+
+        public SwitchToProfile(String newProfileName) {
+            super(newProfileName);
         }
     }
 
     /**
      * Requests the creation of a new profile name.
      */
-    public static class CreateNewProfile {
-        public String newProfileName;
+
+    public static class CreateNewProfile extends Profile {
+
         public CreateNewProfile(String newProfileName) {
-            this.newProfileName = newProfileName;
+            super(newProfileName);
         }
     }
 
     /**
      * Requests deletion of this profile
      */
+
     public static class DeleteProfile {
+
         public String profileName;
         public DeleteProfile(String profileNameToDelete) {
             this.profileName = profileNameToDelete;
         }
     }
+
+
 }
+
+

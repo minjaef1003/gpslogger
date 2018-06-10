@@ -27,8 +27,15 @@ import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 
 public class GpsLoggerDrawerItem {
 
+    private static GpsLoggerDrawerItem instance = null;
 
-    public static PrimaryDrawerItem newPrimary(int resTitle, int resSummary, int resIcon, int identifier) {
+    public static GpsLoggerDrawerItem getInstance() {
+        if(instance==null)
+            instance = new GpsLoggerDrawerItem();
+        return instance;
+    }
+
+    public PrimaryDrawerItem newPrimary(int resTitle, int resSummary, int resIcon, int identifier) {
 
         return new PrimaryDrawerItem()
         .withName(resTitle)
@@ -41,7 +48,7 @@ public class GpsLoggerDrawerItem {
 
     }
 
-    public static SecondaryDrawerItem newSecondary(int resTitle, int resIcon, int identifier) {
+    public SecondaryDrawerItem newSecondary(int resTitle, int resIcon, int identifier) {
 
         return new SecondaryDrawerItem()
                 .withName(resTitle)

@@ -300,13 +300,13 @@ public class GpsSimpleViewFragment extends GenericViewFragment implements View.O
 
     @EventBusHook
     public void onEventMainThread(ServiceEvents.WaitingForLocation waitingForLocation){
-        onWaitingForLocation(waitingForLocation.waiting);
+        onWaitingForLocation(waitingForLocation.service);
     }
 
     @EventBusHook
     public void onEventMainThread(ServiceEvents.LoggingStatus loggingStatus){
 
-        if(loggingStatus.loggingStarted){
+        if(loggingStatus.service){
             showPreferencesSummary();
             clearLocationDisplay();
             setActionButtonStop();

@@ -77,7 +77,7 @@ public class GpsBigViewFragment extends GenericViewFragment implements View.OnTo
 
     @EventBusHook
     public void onEventMainThread(ServiceEvents.LoggingStatus loggingStatus){
-        if(loggingStatus.loggingStarted){
+        if(loggingStatus.service){
             TextView txtLat = (TextView) rootView.findViewById(R.id.bigview_text_lat);
             TextView txtLong = (TextView) rootView.findViewById(R.id.bigview_text_long);
             txtLat.setText("");

@@ -468,7 +468,7 @@ public class StringsTest {
      */
     @Test
     public void getBearingDescription_ReturnsNorth(){
-        Float bearingDegrees = 399f;
+        Float bearingDegrees = 359f;
         String actual = getBearingDescription(bearingDegrees,GetBearingDescription_Context(bearingDegrees));
         String expected = "Roughly North";
         assertThat("North returns Roughly North", actual, is(expected));
